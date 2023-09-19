@@ -1,17 +1,28 @@
 # ixBrowser Local API
 
-ixBrowser local API official python version
+ixBrowser local API V2.0 official python version
 
 ## Installation
 
+1. pypi install
 ```BASH
-pip install ixbrowser_local_api
+pip install ixbrowser-local-api
+```
+
+2. Source code install
+```BASH
+git clone https://github.com/ixspyinc/ixbrowser-local-api-python.git
+cd ixbrowser-local-api-python
+python setup.py install
 ```
 
 ## Usage
 
 Basic usage
 ```python
+import random
+from ixbrowser_local_api import IXBrowserClient
+
 c = IXBrowserClient()
 data = c.get_profile_list()
 if data is None:

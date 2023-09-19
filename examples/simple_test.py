@@ -1,7 +1,6 @@
 import time
 from ixbrowser_local_api import IXBrowserClient
 
-
 c = IXBrowserClient()
 
 """
@@ -118,9 +117,9 @@ profile_id = 250
 proxy_id = 10
 country = 'us'
 city = 'Ada'
-node_checked = 'US-US'
+traffic_package_gateway = 'US-US'
 
-data = c.update_profile_to_traffic_package_mode(profile_id, proxy_id, country, city, node_checked)
+data = c.update_profile_to_traffic_package_mode(profile_id, proxy_id, country, city, traffic_package_gateway)
 if data is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)

@@ -1,6 +1,5 @@
 import sys
 import time
-import random
 from ixbrowser_local_api import IXBrowserClient
 
 from selenium.webdriver import Chrome
@@ -14,10 +13,14 @@ if data is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
     sys.exit()
 
-item = random.choice(data)
+if len(data) == 0:
+    print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Please create a profile first.')
+    sys.exit()
+
+item = data[0]
 
 profile_id = item['profile_id']
-print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Random choice profile_id=', profile_id)
+print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'profile_id=', profile_id)
 
 open_result = c.open_profile(profile_id, cookies_backup=False, load_profile_info_page=False)
 if open_result is None:
@@ -49,8 +52,7 @@ if close_result is None:
     sys.exit()
 """
 
-driver.close()
-# driver.quit()
+c.close_profile_via_selenium(driver)
 
 print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'window closed.')
 

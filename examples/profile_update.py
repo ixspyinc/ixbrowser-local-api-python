@@ -10,7 +10,7 @@ p = Profile()
 p.profile_id = 250
 # p.random_color()
 p.site_url = 'https://www.ixbrowser.com'
-p.name = 'Temporarily created on ' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+p.name = 'Temp ' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
 
 result = c.update_profile(p)
 if result is None:
