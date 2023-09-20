@@ -1,0 +1,41 @@
+name: Release Package to PyPI
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x  # Replace 'x' with your desired Python version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install setuptools wheel twine
+
+      - name: Extract tag and set as environment variable
+        run: |
+          echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Build and Publish # Add your PyPI API token as a secret in the GitHub repository settings
+        run: |
+          TAG=${{ env.TAG }}
+          echo "Building version $TAG"
+          rm -rf build
+          rm -rf dist
+          rm -rf ixbrowser_local_api.egg-info
+          python setup.py sdist bdist_wheel
+
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.PYPI_TOKEN }}
