@@ -1,8 +1,16 @@
+import pathlib
+
 from setuptools import setup, find_packages
 
+HERE = pathlib.Path(__file__).parent.resolve()
+LONG_DESCRIPTION = (HERE / "README.md").read_text(encoding="utf8")
+LONG_DESC_TYPE = "text/markdown"
+
 setup(name='ixbrowser-local-api',
-      version='1.0.2',
+      version='1.0.3',
       description='A client of ixBrowser local api',
+      long_description=LONG_DESCRIPTION,
+      long_description_content_type=LONG_DESC_TYPE,
       author='IXSPY Team',
       author_email='tech@ixspy.com',
       url='https://github.com/ixspyinc/ixbrowser-local-api-python',
