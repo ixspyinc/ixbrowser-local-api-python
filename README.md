@@ -4,7 +4,7 @@ ixBrowser local API V2.0 official python version
 
 ## Installation
 
-1. pypi install (Not supported yet)
+1. pypi install
 ```BASH
 pip install ixbrowser-local-api
 ```
