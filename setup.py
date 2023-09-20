@@ -1,4 +1,5 @@
 import pathlib
+from ixbrowser_local_api import version
 
 from setuptools import setup, find_packages
 
@@ -6,8 +7,10 @@ HERE = pathlib.Path(__file__).parent.resolve()
 LONG_DESCRIPTION = (HERE / "README.md").read_text(encoding="utf8")
 LONG_DESC_TYPE = "text/markdown"
 
+CURR_VERSION = '.'.join(str(x) for x in version.VERSION)
+
 setup(name='ixbrowser-local-api',
-      version='1.0.3',
+      version=CURR_VERSION,
       description='A client of ixBrowser local api',
       long_description=LONG_DESCRIPTION,
       long_description_content_type=LONG_DESC_TYPE,
