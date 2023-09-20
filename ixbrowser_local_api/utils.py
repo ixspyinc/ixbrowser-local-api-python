@@ -10,6 +10,8 @@ RESULT_CODE_FOR_SUCCESS = 0
 
 
 class Utils(object):
+    show_request_log = False
+
     @staticmethod
     def now():
         return int(datetime.now().timestamp() * 1000)
@@ -24,8 +26,9 @@ class Utils(object):
         """
         r = None
         error_msg = None
-        # print(url)
-        # print(params)
+        if Utils.show_request_log:
+            print('request url=', url)
+            print('request params=', params)
         try:
             r = requests.post(url, json=params, timeout=20)
         except Exception as e:
@@ -33,7 +36,8 @@ class Utils(object):
 
         if error_msg is None:
             if r.status_code == HTTP_CODE_FOR_SUCCESS:
-                # print(r.text)
+                if Utils.show_request_log:
+                    print('response string=', r.text)
                 result = r.json()
                 if 'error' in result:
                     if 'code' in result['error']:

@@ -7,16 +7,20 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 
 c = IXBrowserClient()
+c.show_request_log = True
 
 # Make sure the profile has been created
 profile_id = 251
+
+'''
 p = Proxy()
 p.proxy_mode = Consts.PROXY_MODE_CUSTOM
 p.proxy_type = 'socks5'
 p.proxy_ip = '192.168.7.96'
 p.proxy_port = '20201'
-
-open_result = c.open_profile_with_random_fingerprint(profile_id, load_profile_info_page=True, proxy_config=p)
+open_result = c.open_profile_with_random_fingerprint(profile_id, load_profile_info_page=False, proxy_config=p)
+'''
+open_result = c.open_profile_with_random_fingerprint(profile_id, load_profile_info_page=False)
 if open_result is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Open profile error:')
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
@@ -46,8 +50,7 @@ if close_result is None:
     sys.exit()
 """
 
-driver.close()
-# driver.quit()
+c.close_profile_via_selenium(driver)
 
 print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'window closed.')
 
