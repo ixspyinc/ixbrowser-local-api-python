@@ -1,9 +1,19 @@
 import sys
 import time
 from ixbrowser_local_api import IXBrowserClient
-
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
+
+"""
+Get the Profile list, open the latest profile, then visit the ixbrowser homepage, and close it after the last 30 seconds.
+
+Required installation
+pip install ixbrowser-local-api
+pip install selenium
+
+More information
+https://github.com/ixspyinc/ixbrowser-local-api-python
+"""
 
 c = IXBrowserClient()
 data = c.get_profile_list()
@@ -55,5 +65,3 @@ if close_result is None:
 c.close_profile_via_selenium(driver)
 
 print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'window closed.')
-
-

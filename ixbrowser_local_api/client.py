@@ -4,12 +4,9 @@ from .utils import Utils
 from .consts import Consts
 from .entities import Profile, Proxy, Preference, Fingerprint
 
-DEFAULT_API_TARGET = '127.0.0.1'
-DEFAULT_API_PORT = 53200
-
 
 class IXBrowserClient(object):
-    def __init__(self, target=DEFAULT_API_TARGET, port=DEFAULT_API_PORT):
+    def __init__(self, target=Consts.DEFAULT_API_TARGET, port=Consts.DEFAULT_API_PORT):
         """
 
         :param target:

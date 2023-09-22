@@ -1,5 +1,5 @@
 import random
-from .consts import *
+from .consts import Consts
 from .errors import UnexpectedError
 
 
@@ -41,15 +41,21 @@ class Profile(object):
         for k, v in self.__dict__.items():
             setattr(self, k, None)
 
-    def random_color(self):
+    def random_color(self, source='list'):
         """
-
-        :return: string
+        Randomly generate colors
+        It is recommended to choose randomly from the official list.
+        Completely randomly generated color do not support profile icon rendering
+        :param source: list/random
+        :return:
         """
-        r = random.randint(0, 255)
-        b = random.randint(0, 255)
-        g = random.randint(0, 255)
-        self.color = "#{:02x}{:02x}{:02x}".format(r, b, g)
+        if source == 'list':
+            self.color = random.choice(Consts.DEFAULT_PROFILE_COLOR_LIST)
+        else:
+            r = random.randint(0, 255)
+            b = random.randint(0, 255)
+            g = random.randint(0, 255)
+            self.color = "#{:02x}{:02x}{:02x}".format(r, b, g)
 
     def set_proxy_config(self, proxy_dict):
         self.proxy_config = Proxy(proxy_dict)

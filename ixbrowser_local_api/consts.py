@@ -1,5 +1,11 @@
 class Consts:
 
+    DEFAULT_API_TARGET = '127.0.0.1'
+    DEFAULT_API_PORT = 53200
+
+    HTTP_CODE_FOR_SUCCESS = 200
+    RESULT_CODE_FOR_SUCCESS = 0
+
     """
     Action List
     """
@@ -51,3 +57,14 @@ class Consts:
     DEFAULT_PROXY_MODE = PROXY_MODE_CUSTOM
 
     DEFAULT_TRAFFIC_PACKAGE_GATEWAY = 'Default'
+
+    DEFAULT_PROFILE_COLOR_LIST = ["#FF6666",
+                                  "#FF8C00",
+                                  "#FFD700",
+                                  "#90EE90",
+                                  "#00CED1",
+                                  "#1E90FF",
+                                  "#CC9966",
+                                  "#FFCC99",
+                                  "#C71585",
+                                  "#FF0033", ]

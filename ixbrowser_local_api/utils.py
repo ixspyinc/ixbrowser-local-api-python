@@ -1,15 +1,11 @@
-import sys
 import requests
 from datetime import datetime
 from .consts import Consts
 from .errors import UnexpectedError, HttpError, ResponseError
 
 
-HTTP_CODE_FOR_SUCCESS = 200
-RESULT_CODE_FOR_SUCCESS = 0
-
-
 class Utils(object):
+
     show_request_log = False
 
     @staticmethod
@@ -35,13 +31,13 @@ class Utils(object):
             error_msg = 'exception desc:' + str(e)
 
         if error_msg is None:
-            if r.status_code == HTTP_CODE_FOR_SUCCESS:
+            if r.status_code == Consts.HTTP_CODE_FOR_SUCCESS:
                 if Utils.show_request_log:
                     print('response string=', r.text)
                 result = r.json()
                 if 'error' in result:
                     if 'code' in result['error']:
-                        if result['error']['code'] == RESULT_CODE_FOR_SUCCESS:
+                        if result['error']['code'] == Consts.RESULT_CODE_FOR_SUCCESS:
                             if 'data' in result:
                                 return result['data']
                             else:
