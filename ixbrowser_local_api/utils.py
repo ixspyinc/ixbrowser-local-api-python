@@ -23,8 +23,8 @@ class Utils(object):
         r = None
         error_msg = None
         if Utils.show_request_log:
-            print('request url=', url)
-            print('request params=', params)
+            print('[debug info]request url=', url)
+            print('[debug info]request params=', params)
         try:
             r = requests.post(url, json=params, timeout=20)
         except Exception as e:
@@ -33,7 +33,7 @@ class Utils(object):
         if error_msg is None:
             if r.status_code == Consts.HTTP_CODE_FOR_SUCCESS:
                 if Utils.show_request_log:
-                    print('response string=', r.text)
+                    print('[debug info]response string=', r.text)
                 result = r.json()
                 if 'error' in result:
                     if 'code' in result['error']:

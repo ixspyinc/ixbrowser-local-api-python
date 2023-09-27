@@ -90,7 +90,12 @@ class Proxy(object):
         self.proxy_port = None
         self.proxy_user = None
         self.proxy_password = None
-        self.ip_policy = None
+
+        self.country = None
+        self.city = None
+        self.gateway = None
+
+        self.traffic_package_ip_policy = None
         self.ip_detection = None
 
         if proxy_dict is not None and isinstance(proxy_dict, dict):
@@ -112,6 +117,75 @@ class Proxy(object):
             if v is not None:
                 d[k] = v
         return d
+
+    def change_to_traffic_package_mode(self, proxy_id, country=None, city=None,
+                                       gateway=Consts.DEFAULT_TRAFFIC_PACKAGE_GATEWAY, ip_detection=None,
+                                       ip_policy=None):
+        """
+        :param proxy_id:
+        :param country:
+        :param city:
+        :param gateway:
+        :param ip_detection: bool
+        :param ip_policy: bool
+        :return:
+        """
+        self.reset_all_attributes()
+        self.proxy_mode = Consts.PROXY_MODE_TRAFFIC_PACKAGE
+        self.proxy_id = proxy_id
+        if country is not None:
+            self.country = country
+        if city is not None:
+            self.city = city
+        if gateway is not None:
+            self.gateway = gateway
+        if ip_detection is not None:
+            if isinstance(ip_detection, bool):
+                if ip_detection:
+                    self.ip_detection = 1
+                else:
+                    self.ip_detection = 0
+            else:
+                self.ip_detection = ip_detection
+        if ip_policy is not None:
+            self.traffic_package_ip_policy = ip_policy
+
+        return True
+
+    def change_to_purchased_mode(self, proxy_id):
+        """
+
+        :param proxy_id:
+        :return:
+        """
+        self.reset_all_attributes()
+        self.proxy_mode = Consts.PROXY_MODE_PURCHASED
+        self.proxy_id = proxy_id
+        return True
+
+    def change_to_custom_mode(self, proxy_type=Consts.PROXY_TYPE_DIRECT, proxy_ip=None, proxy_port=None,
+                              proxy_user=None, proxy_password=None):
+        """
+
+        :param proxy_type:
+        :param proxy_ip:
+        :param proxy_port:
+        :param proxy_user:
+        :param proxy_password:
+        :return:
+        """
+        self.reset_all_attributes()
+        self.proxy_mode = Consts.PROXY_MODE_CUSTOM
+        self.proxy_type = proxy_type
+        if proxy_ip is not None:
+            self.proxy_ip = proxy_ip
+        if proxy_port is not None:
+            self.proxy_port = proxy_port
+        if proxy_user is not None:
+            self.proxy_user = proxy_user
+        if proxy_password is not None:
+            self.proxy_password = proxy_password
+        return True
 
 
 class Preference(object):

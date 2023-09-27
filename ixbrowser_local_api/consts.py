@@ -1,14 +1,16 @@
 class Consts:
 
+    # Default value
     DEFAULT_API_TARGET = '127.0.0.1'
     DEFAULT_API_PORT = 53200
 
     HTTP_CODE_FOR_SUCCESS = 200
     RESULT_CODE_FOR_SUCCESS = 0
 
-    """
-    Action List
-    """
+    DEFAULT_SITE_ID = 21
+    DEFAULT_GROUP_ID = 1
+
+    # Action List
     ACTION_FOR_PROFILE_LIST = 'profile-list'
     ACTION_FOR_PROFILE_OPEN = 'profile-open'
     ACTION_FOR_PROFILE_OPEN_WITH_FINGERPRINT = 'profile-open-with-random-fingerprint'
@@ -45,19 +47,33 @@ class Consts:
 
     ACTION_FOR_PROXY_TAG_LIST = 'proxy-tag-list'
 
-    """
-    Default value
-    """
-    DEFAULT_SITE_ID = 21
-    DEFAULT_GROUP_ID = 1
-
+    # Proxy Mode
     PROXY_MODE_TRAFFIC_PACKAGE = 1
     PROXY_MODE_CUSTOM = 2
     PROXY_MODE_PURCHASED = 3
     DEFAULT_PROXY_MODE = PROXY_MODE_CUSTOM
 
-    DEFAULT_TRAFFIC_PACKAGE_GATEWAY = 'Default'
+    # Proxy Type
+    PROXY_TYPE_DIRECT = 'direct'
+    PROXY_TYPE_HTTP = 'http'
+    PROXY_TYPE_HTTPS = 'https'
+    PROXY_TYPE_SOCKS5 = 'socks5'
+    PROXY_TYPE_SSH = 'ssh'
 
+    # Traffic Package Gateway
+    DEFAULT_TRAFFIC_PACKAGE_GATEWAY = 'Default'
+    TRAFFIC_PACKAGE_GATEWAY_GEO = 'GEO'
+    TRAFFIC_PACKAGE_GATEWAY_US = 'US'
+    TRAFFIC_PACKAGE_GATEWAY_SG = 'SG'
+    TRAFFIC_PACKAGE_GATEWAY_AU = 'AU'
+    TRAFFIC_PACKAGE_GATEWAY_US_TRANSIT_IN_US = 'US-US'
+    TRAFFIC_PACKAGE_GATEWAY_SG_TRANSIT_IN_US = 'US-SG'
+    TRAFFIC_PACKAGE_GATEWAY_AU_TRANSIT_IN_US = 'US-AU'
+    TRAFFIC_PACKAGE_GATEWAY_US_TRANSIT_IN_HK = 'HK-US'
+    TRAFFIC_PACKAGE_GATEWAY_SG_TRANSIT_IN_HK = 'HK-SG'
+    TRAFFIC_PACKAGE_GATEWAY_AU_TRANSIT_IN_HK = 'HK-AU'
+
+    # Profile Color List
     DEFAULT_PROFILE_COLOR_LIST = ["#FF6666",
                                   "#FF8C00",
                                   "#FFD700",

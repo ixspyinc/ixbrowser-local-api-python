@@ -1,10 +1,11 @@
 import sys
 import time
 from ixbrowser_local_api import IXBrowserClient
-from ixbrowser_local_api import Profile, Proxy, Preference, Fingerprint
+from ixbrowser_local_api import Profile, Proxy, Preference, Fingerprint, Consts
 
 
 c = IXBrowserClient()
+c.show_request_log = True
 
 # Object properties are set one by one
 p = Profile()
@@ -12,10 +13,16 @@ p.random_color()
 p.site_url = 'https://www.ixbrowser.com'
 p.name = 'Temp ' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
 proxy = Proxy()
-proxy.proxy_mode = 2
-proxy.proxy_type = 'socks5'
-proxy.proxy_ip = '192.168.7.96'
-proxy.proxy_port = '20001'
+
+# custom proxy
+proxy.change_to_custom_mode(Consts.PROXY_TYPE_SOCKS5, '127.0.0.1', '10808')
+
+# purchased proxy
+# proxy.change_to_purchased_mode(1)
+
+# traffic package proxy
+# proxy.change_to_traffic_package_mode(1, 'us', ip_policy=True, ip_detection=True)
+
 p.proxy_config = proxy
 
 preference = Preference()
@@ -31,6 +38,7 @@ fingerprint.language = 'cn'
 fingerprint.client_rects = 0
 p.fingerprint_config = fingerprint
 
+
 """
 # Assign values to object properties in batches through dictionaries
 p_dict = dict()
@@ -41,8 +49,8 @@ p_dict['name'] = 'Temp ' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(tim
 p_dict['proxy_config'] = dict()
 p_dict['proxy_config']['proxy_mode'] = 2
 p_dict['proxy_config']['proxy_type'] = 'socks5'
-p_dict['proxy_config']['proxy_ip'] = '192.168.7.96'
-p_dict['proxy_config']['proxy_port'] = '20001'
+p_dict['proxy_config']['proxy_ip'] = '127.0.0.1'
+p_dict['proxy_config']['proxy_port'] = '10808'
 
 p_dict['preference_config'] = dict()
 p_dict['preference_config']['block_audio'] = 1

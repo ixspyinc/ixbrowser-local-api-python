@@ -246,14 +246,14 @@ class IXBrowserClient(object):
             return True
 
     def update_profile_to_traffic_package_mode(self, profile_id, proxy_id, country=None, city=None,
-                                               traffic_package_gateway=None):
+                                               gateway=None):
         """
         update profile to traffic package mode
         :param profile_id:
         :param proxy_id:
         :param country:
         :param city:
-        :param traffic_package_gateway:
+        :param gateway:
         :return: string
         """
         url = self.base_url + Consts.ACTION_FOR_PROFILE_UPDATE_PROXY_TO_TRAFFIC_PACKAGE_MODE
@@ -267,10 +267,10 @@ class IXBrowserClient(object):
         if city is not None:
             params['proxy_info']['city'] = city
 
-        if traffic_package_gateway is None:
+        if gateway is None:
             params['proxy_info']['gateway'] = Consts.DEFAULT_TRAFFIC_PACKAGE_GATEWAY
         else:
-            params['proxy_info']['gateway'] = traffic_package_gateway
+            params['proxy_info']['gateway'] = gateway
 
         try:
             self.code = None
@@ -313,8 +313,8 @@ class IXBrowserClient(object):
         else:
             return True
 
-    def update_profile_to_custom_proxy_mode(self, profile_id, proxy_type, proxy_ip=None, proxy_port=None,
-                                            proxy_user=None, proxy_password=None):
+    def update_profile_to_custom_proxy_mode(self, profile_id, proxy_type=Consts.PROXY_TYPE_DIRECT, proxy_ip=None,
+                                            proxy_port=None, proxy_user=None, proxy_password=None):
         """
         update profile to custom proxy mode
         :param profile_id:
