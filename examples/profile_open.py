@@ -30,6 +30,7 @@ if len(data) == 0:
 item = data[0]
 
 profile_id = item['profile_id']
+
 print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'profile_id=', profile_id)
 
 open_result = c.open_profile(profile_id, cookies_backup=False, load_profile_info_page=False)
@@ -38,7 +39,7 @@ if open_result is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
     sys.exit()
-
+# time.sleep(30)
 web_driver_path = open_result['webdriver']
 debugging_address = open_result['debugging_address']
 

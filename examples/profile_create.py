@@ -12,10 +12,12 @@ p = Profile()
 p.random_color()
 p.site_url = 'https://www.ixbrowser.com'
 p.name = 'Temp ' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
-proxy = Proxy()
 
 # custom proxy
+proxy = Proxy()
 proxy.change_to_custom_mode(Consts.PROXY_TYPE_SOCKS5, '127.0.0.1', '10808')
+bypass_ls = ['*.ipinfo.io', 'ixbrowser.com']
+proxy.set_bypass_list(bypass_ls)
 
 # purchased proxy
 # proxy.change_to_purchased_mode(1)

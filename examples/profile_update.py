@@ -8,7 +8,7 @@ c = IXBrowserClient()
 c.show_request_log = True
 
 p = Profile()
-p.profile_id = 249
+p.profile_id = 1
 p.random_color()
 p.site_url = 'https://www.ixbrowser.com'
 p.name = 'Temp ' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
@@ -20,11 +20,18 @@ p.fingerprint_config = fp
 preference = Preference()
 preference.open_url = 'https://www.google.com'
 
+
 preference.block_image = 1
 p.preference_config = preference
 
 proxy = Proxy()
 proxy.change_to_custom_mode(Consts.PROXY_TYPE_SOCKS5, '127.0.0.1', '10808')
+
+# Sites that Chrome browser will automatically link to
+bypass_ls = ['*.gvt1.com', 'update.googleapis.com', 'www.gstatic.com']
+proxy.set_bypass_list(bypass_ls)
+# or
+# proxy.set_bypass_list(None)
 p.proxy_config = proxy
 
 result = c.update_profile(p)

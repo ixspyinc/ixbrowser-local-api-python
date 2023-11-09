@@ -33,6 +33,11 @@ class Consts:
 
     ACTION_FOR_PROFILE_RANDOM_FINGERPRINT = 'profile-random-fingerprint-configuration'
 
+    ACTION_FOR_PROFILE_CREATE_TRANSFER_CODE = 'profile-transfer-code-create'
+    ACTION_FOR_PROFILE_CANCEL_TRANSFER_CODE = 'profile-transfer-cancel'
+    ACTION_FOR_PROFILE_IMPORT_VIA_TRANSFER_CODE = 'profile-transfer-code-import'
+    ACTION_FOR_PROFILE_TRANSFER_RECORD_LIST = 'profile-transfer-record-list'
+
     ACTION_FOR_GROUP_LIST = 'group-list'
     ACTION_FOR_GROUP_CREATE = 'group-create'
     ACTION_FOR_GROUP_UPDATE = 'group-update'
@@ -84,3 +89,11 @@ class Consts:
                                   "#FFCC99",
                                   "#C71585",
                                   "#FF0033", ]
+
+    # Profile Transfer Code
+    TRANSFER_PROXY_MODE_SHARING = 1
+    TRANSFER_PROXY_MODE_TRANSFER = 2
+
+    TRANSFER_RECORD_LIST_TYPE_TRANSFER = 1
+    TRANSFER_RECORD_LIST_TYPE_IMPORT = 2
+

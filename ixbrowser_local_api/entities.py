@@ -98,6 +98,9 @@ class Proxy(object):
         self.traffic_package_ip_policy = None
         self.ip_detection = None
 
+        self.enable_bypass = None
+        self.bypass_list = None
+
         if proxy_dict is not None and isinstance(proxy_dict, dict):
             for k, v in proxy_dict.items():
                 if hasattr(self, k):
@@ -117,6 +120,27 @@ class Proxy(object):
             if v is not None:
                 d[k] = v
         return d
+
+    def set_bypass_list(self, domain_ls):
+        """
+        enable/disable bypass list
+        :param domain_ls:
+        :return:
+        """
+        if domain_ls is not None:
+            if len(domain_ls) > 0:
+                self.enable_bypass = True
+                if isinstance(domain_ls, list):
+                    self.bypass_list = '\n'.join(domain_ls)
+                else:
+                    self.bypass_list = domain_ls
+            else:
+                self.enable_bypass = False
+                self.bypass_list = ''
+
+        else:
+            self.enable_bypass = False
+            self.bypass_list = ''
 
     def change_to_traffic_package_mode(self, proxy_id, country=None, city=None,
                                        gateway=Consts.DEFAULT_TRAFFIC_PACKAGE_GATEWAY, ip_detection=None,

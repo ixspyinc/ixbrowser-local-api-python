@@ -376,6 +376,132 @@ class IXBrowserClient(object):
         else:
             return True
 
+    def create_profile_transfer_code(self, profile_id, login_pwd, transfer_note=None, transfer_proxy=None,
+                                     transfer_proxy_mode=None):
+        """
+        create profile transfer code
+        :param profile_id:
+        :param login_pwd: login password
+        :param transfer_note: 0=disable 1=enable
+        :param transfer_proxy: 0=disable 1=enable
+        :param transfer_proxy_mode: 1=proxy sharing 2=proxy transfer
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_CREATE_TRANSFER_CODE
+        params = dict()
+        params['profile_id'] = profile_id
+        params['password'] = login_pwd
+        if transfer_note is not None:
+            params['transfer_note'] = 1 if transfer_note else 0
+        if transfer_proxy is not None:
+            params['transfer_proxy'] = 1 if transfer_proxy else 0
+            if params['transfer_proxy'] == 1:
+                if transfer_proxy_mode is not None:
+                    if transfer_proxy_mode == Consts.TRANSFER_PROXY_MODE_TRANSFER:
+                        params['transfer_proxy_mode'] = Consts.TRANSFER_PROXY_MODE_TRANSFER
+                    else:
+                        params['transfer_proxy_mode'] = Consts.TRANSFER_PROXY_MODE_SHARING
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            if 'transfer_code' in result:
+                return result['transfer_code']
+            else:
+                return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def cancel_profile_transfer_code(self, profile_id):
+        """
+
+        :param profile_id:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_CANCEL_TRANSFER_CODE
+        params = dict()
+        params['profile_id'] = profile_id
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def import_profile_via_transfer_code(self, transfer_code, proxy_config: Proxy = None):
+        """
+
+        :param transfer_code:
+        :param proxy_config:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_IMPORT_VIA_TRANSFER_CODE
+        params = dict()
+        params['transfer_code'] = transfer_code
+        if proxy_config is not None:
+            params['proxy_config'] = proxy_config.dump_to_dict()
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def get_profile_transfer_record_list(self, keyword=None, record_type=Consts.TRANSFER_RECORD_LIST_TYPE_TRANSFER, page=1, limit=10):
+        """
+        get profile transfer record list
+        :param keyword:
+        :param record_type:
+        :param page:
+        :param limit:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_TRANSFER_RECORD_LIST
+        params = dict()
+        params['page'] = page
+        params['limit'] = limit
+        if record_type > 0:
+            params['type'] = record_type
+
+        if keyword is not None and keyword != '':
+            params['title'] = keyword
+
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            self.total = result['total']
+            return result['data']
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+
     def update_profile_groups_in_batches(self, profile_id, group_id):
         """
         update profile groups in batches
