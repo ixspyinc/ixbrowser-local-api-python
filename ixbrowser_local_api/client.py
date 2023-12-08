@@ -172,7 +172,13 @@ class IXBrowserClient(object):
         """
         whs = obj.window_handles
         for handle in whs:
-            obj.switch_to_window(handle)
+            # Compatible with selenium 3 and selenium 4 methods
+            try:
+                # selenium 4
+                obj.switch_to.window(handle)
+            except:
+                # selenium 3
+                obj.switch_to_window(handle)
             obj.close()
 
     def close_profile_in_batches(self, profile_id: list):

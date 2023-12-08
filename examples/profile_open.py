@@ -1,11 +1,13 @@
 import sys
 import time
+sys.path.insert(0, sys.path[0]+"/../")
 from ixbrowser_local_api import IXBrowserClient
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
 """
-Get the Profile list, open the latest profile, then visit the ixbrowser homepage, and close it after the last 30 seconds.
+Get the profile list, open the latest profile, then visit the ixbrowser homepage, and close it after the last 30 seconds.
 
 Required installation
 pip install ixbrowser-local-api
@@ -45,16 +47,20 @@ debugging_address = open_result['debugging_address']
 
 chrome_options = Options()
 chrome_options.add_experimental_option("debuggerAddress", debugging_address)
-driver = Chrome(web_driver_path, chrome_options=chrome_options)
+
+# selenium 3 version
+# driver = Chrome(web_driver_path, chrome_options=chrome_options)
+
+# selenium 4 and above
+driver = Chrome(service=Service(web_driver_path), options=chrome_options)
 
 print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Visit the ixBrowser homepage by default')
 driver.get("https://www.ixbrowser.com")
 print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Automatically exit after 30 seconds')
 time.sleep(30)
 
-# close_profile is currently a forced process kill method, which will cause browser exceptions.
-# It is recommended to use selenium to close the window.
 """
+# close_profile is currently a forced process kill method, which will cause browser exceptions.
 close_result = c.close_profile(profile_id)
 if close_result is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Close profile error:')
@@ -62,7 +68,7 @@ if close_result is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
     sys.exit()
 """
-
+# If using selenium, it is recommended to use the following method to close
 c.close_profile_via_selenium(driver)
 
 print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'window closed.')

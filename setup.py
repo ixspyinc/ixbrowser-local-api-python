@@ -14,8 +14,8 @@ setup(name='ixbrowser-local-api',
       description='A client of ixBrowser local api',
       long_description=LONG_DESCRIPTION,
       long_description_content_type=LONG_DESC_TYPE,
-      author='IXSPY Team',
-      author_email='tech@ixspy.com',
+      author='ixBrowser Team',
+      author_email='tech@ixborwser.com',
       url='https://github.com/ixspyinc/ixbrowser-local-api-python',
       license='MIT',
       keywords='',
@@ -27,5 +27,6 @@ setup(name='ixbrowser-local-api',
                    "Programming Language :: Python :: 3.8",
                    "Programming Language :: Python :: 3.9",
                    "Programming Language :: Python :: 3.10",
-                   "Programming Language :: Python :: 3.11"]
+                   "Programming Language :: Python :: 3.11",
+                   "Programming Language :: Python :: 3.12"]
       )

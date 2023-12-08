@@ -1,5 +1,6 @@
 import sys
 import time
+sys.path.insert(0, sys.path[0]+"/../")
 from ixbrowser_local_api import IXBrowserClient
 from ixbrowser_local_api import Profile, Proxy, Preference, Fingerprint, Consts
 
