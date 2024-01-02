@@ -7,7 +7,13 @@ class Consts:
     HTTP_CODE_FOR_SUCCESS = 200
     RESULT_CODE_FOR_SUCCESS = 0
 
-    DEFAULT_SITE_ID = 21
+    # Other Site
+    DEFAULT_SITE_ID_CUSTOM_PAGE = 21
+
+    # Blank Page
+    DEFAULT_SITE_ID_BLANK_PAGE = 22
+
+    # Default Group
     DEFAULT_GROUP_ID = 1
 
     # Action List
@@ -19,9 +25,11 @@ class Consts:
 
     ACTION_FOR_PROFILE_CREATE = 'profile-create'
     ACTION_FOR_PROFILE_UPDATE = 'profile-update'
-    ACTION_FOR_PROFILE_DELETE = 'profile-deleted'
-    ACTION_FOR_PROFILE_CLEAR_CACHE = 'profile-clear-cache'
+    ACTION_FOR_PROFILE_DELETE = 'profile-delete'
 
+    ACTION_FOR_PROFILE_COPY = 'profile-copy'
+
+    ACTION_FOR_PROFILE_CLEAR_CACHE = 'profile-clear-cache'
     ACTION_FOR_PROFILE_GET_COOKIES = 'profile-get-cookies'
     ACTION_FOR_PROFILE_UPDATE_COOKIES = 'profile-update-cookies'
 
@@ -43,6 +51,11 @@ class Consts:
     ACTION_FOR_GROUP_UPDATE = 'group-update'
     ACTION_FOR_GROUP_DELETE = 'group-delete'
 
+    ACTION_FOR_TAG_LIST = 'tag-list'
+    ACTION_FOR_TAG_CREATE = 'tag-create'
+    ACTION_FOR_TAG_UPDATE = 'tag-update'
+    ACTION_FOR_TAG_DELETE = 'tag-delete'
+
     ACTION_FOR_TRAFFIC_PACKAGE_LIST = 'traffic-package-list'
 
     ACTION_FOR_PROXY_LIST = 'proxy-list'
@@ -56,6 +69,7 @@ class Consts:
     PROXY_MODE_TRAFFIC_PACKAGE = 1
     PROXY_MODE_CUSTOM = 2
     PROXY_MODE_PURCHASED = 3
+    PROXY_MODE_EXTRACT_FROM_URL = 4
     DEFAULT_PROXY_MODE = PROXY_MODE_CUSTOM
 
     # Proxy Type
@@ -64,6 +78,20 @@ class Consts:
     PROXY_TYPE_HTTPS = 'https'
     PROXY_TYPE_SOCKS5 = 'socks5'
     PROXY_TYPE_SSH = 'ssh'
+
+    # Proxy Data Format Type
+    PROXY_DATA_FROMAT_TYPE_TXT = 'txt'
+    PROXY_DATA_FROMAT_TYPE_JSON = 'json'
+
+    # Proxy Data TXT Format
+    PROXY_DATA_TXT_FORMAT_LIST = ["ip:port", "ip:port:username:password", "username:password@ip:port", "ip:port@username:password", "username:password:ip:port"]
+
+    # Proxy Data JSON Format
+    PROXY_DATA_JSON_FORMAT = {"ip":"ip", "port":"port", "username":None, "password":None}
+
+    # proxy_extraction_method
+    PROXY_EXTRACT_FROM_URL_FRESH_TYPE_WHEN_INVALID = "invalid"
+    PROXY_EXTRACT_FROM_URL_FRESH_TYPE_WHEN_OPEN = "every_type"
 
     # Traffic Package Gateway
     DEFAULT_TRAFFIC_PACKAGE_GATEWAY = 'Default'
@@ -77,6 +105,9 @@ class Consts:
     TRAFFIC_PACKAGE_GATEWAY_US_TRANSIT_IN_HK = 'HK-US'
     TRAFFIC_PACKAGE_GATEWAY_SG_TRANSIT_IN_HK = 'HK-SG'
     TRAFFIC_PACKAGE_GATEWAY_AU_TRANSIT_IN_HK = 'HK-AU'
+    TRAFFIC_PACKAGE_GATEWAY_US_TRANSIT_IN_CN = 'CN-US'
+    TRAFFIC_PACKAGE_GATEWAY_SG_TRANSIT_IN_CN = 'CN-SG'
+    TRAFFIC_PACKAGE_GATEWAY_AU_TRANSIT_IN_CN = 'CN-AU'
 
     # Profile Color List
     DEFAULT_PROFILE_COLOR_LIST = ["#FF6666",
@@ -96,4 +127,9 @@ class Consts:
 
     TRANSFER_RECORD_LIST_TYPE_TRANSFER = 1
     TRANSFER_RECORD_LIST_TYPE_IMPORT = 2
+
+    # Device name source
+    DEVICE_NAME_SOURCE_RANDOM = 1
+    DEVICE_NAME_SOURCE_CUSTOM = 2
+    DEVICE_NAME_SOURCE_FOLLOW_OS = 0
 

@@ -13,6 +13,7 @@ class Profile(object):
         self.name = None
         self.note = None
         self.group_id = None
+        self.tag = None
         self.username = None
         self.password = None
         self.cookie = None
@@ -24,7 +25,6 @@ class Profile(object):
             # Check whether the dictionary KEY matches the class attribute
             for k, v in profile_dict.items():
                 if hasattr(self, k):
-                    # if
                     if isinstance(v, dict):
                         if k == 'proxy_config':
                             self.proxy_config = Proxy(v)
@@ -57,6 +57,14 @@ class Profile(object):
             g = random.randint(0, 255)
             self.color = "#{:02x}{:02x}{:02x}".format(r, b, g)
 
+    def set_custom_page(self, url):
+        self.site_id = Consts.DEFAULT_SITE_ID_CUSTOM_PAGE
+        self.site_url = url
+
+    def set_blank_page(self):
+        self.site_id = Consts.DEFAULT_SITE_ID_BLANK_PAGE
+        self.site_url = None
+    
     def set_proxy_config(self, proxy_dict):
         self.proxy_config = Proxy(proxy_dict)
 
@@ -100,6 +108,13 @@ class Proxy(object):
 
         self.enable_bypass = None
         self.bypass_list = None
+
+        self.proxy_service = None
+        self.proxy_data_format_type = None
+        self.proxy_data_txt_format = None
+        self.proxy_data_json_format = None
+        self.proxy_extraction_method = None
+        self.proxy_url = None
 
         if proxy_dict is not None and isinstance(proxy_dict, dict):
             for k, v in proxy_dict.items():
@@ -211,19 +226,102 @@ class Proxy(object):
             self.proxy_password = proxy_password
         return True
 
+    def change_to_url_extraction_mode(self, proxy_url, 
+                                      format_type=Consts.PROXY_DATA_FROMAT_TYPE_TXT,
+                                      proxy_type=Consts.PROXY_TYPE_SOCKS5, 
+                                      extract_method = Consts.PROXY_EXTRACT_FROM_URL_FRESH_TYPE_WHEN_INVALID,
+                                      txt_mapping = None,
+                                      json_mapping = None):
+        """
+
+        :param proxy_url:
+        :param format_type:
+        :param proxy_type:
+        :param extract_method:
+        :param txt_mapping:
+        :param json_mapping:
+        :return:
+        """
+        self.reset_all_attributes()
+        self.proxy_mode = Consts.PROXY_MODE_EXTRACT_FROM_URL
+
+        self.proxy_url = proxy_url
+        self.proxy_service = 'general'
+        self.proxy_data_format_type = format_type
+        
+        if self.proxy_data_format_type == Consts.PROXY_DATA_FROMAT_TYPE_TXT:
+            if txt_mapping is None:
+                self.proxy_data_txt_format = Consts.PROXY_DATA_TXT_FORMAT_LIST[0]
+            else:
+                self.proxy_data_txt_format = txt_mapping
+            self.proxy_data_json_format = None
+
+        if self.proxy_data_format_type == Consts.PROXY_DATA_FROMAT_TYPE_JSON:
+            if json_mapping is None:
+                self.proxy_data_json_format = Consts.PROXY_DATA_JSON_FORMAT
+            else:
+                self.proxy_data_json_format = json_mapping
+            self.proxy_data_txt_format = None
+
+        self.proxy_type = proxy_type
+
+        self.proxy_extraction_method = extract_method
+
+        return True
+    
+    def get_url_extraction_mode_json_mapping(self, ip_key='ip', port_key='port', username_key=None, password_key=None):
+        """
+
+        :param ip_key:
+        :param port_key:
+        :param username:
+        :param password:
+        :return: dict
+        """
+        json_mapping = dict()
+        for k in Consts.PROXY_DATA_JSON_FORMAT:
+            if k == 'ip':
+                json_mapping[k] = ip_key
+            if k == 'port':
+                json_mapping[k] = port_key
+            if k == 'username':
+                if username_key is not None:
+                    json_mapping[k] = username_key
+
+            if k == 'password':
+                if password_key is not None:
+                    json_mapping[k] = password_key
+        
+        return json_mapping
+
 
 class Preference(object):
     def __init__(self, preference_dict=None):
         self.cookies_backup = None
+        self.indexed_db_backup =None
+        self.local_storage_backup = None
         self.label_management = None
         self.open_url = None
         self.block_image = None
         self.block_audio = None
+        self.load_profile_info_page = None
 
         if preference_dict is not None and isinstance(preference_dict, dict):
             for k, v in preference_dict.items():
                 if hasattr(self, k):
                     setattr(self, k, v)
+
+    def set_cloud_backup(self, save_cookies=1, save_indexed_db=0, save_local_storage=0):
+        
+        self.cookies_backup = save_cookies
+
+        # If cookie cloud saving is turned off, index_db, etc. will also be forced not to be saved.
+        if self.cookies_backup == 0:
+            self.indexed_db_backup = 0
+            self.local_storage_backup = 0
+        else:
+            self.indexed_db_backup =save_indexed_db
+            self.local_storage_backup = save_local_storage
 
     def reset_all_attributes(self):
         for k, v in self.__dict__.items():
@@ -247,6 +345,10 @@ class Fingerprint(object):
         self.platform = None
         self.ua_type = None
         self.ua_info = None
+
+        self.kernel_version = None
+        self.device_name_source = None
+        self.device_name = None
 
         self.hardware_concurrency = None
         self.device_memory = None
@@ -294,6 +396,10 @@ class Fingerprint(object):
         for k, v in self.__dict__.items():
             setattr(self, k, None)
 
+    def set_device_name(self, name):
+        self.device_name = name
+        self.device_name_source = Consts.DEVICE_NAME_SOURCE_CUSTOM
+    
     def dump_to_dict(self):
         """
 

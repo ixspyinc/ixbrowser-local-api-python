@@ -13,12 +13,12 @@ p = Profile()
 p.random_color()
 p.site_url = 'https://www.ixbrowser.com'
 p.name = 'Temp ' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
+p.tag = ['test', 'test1']
+
+proxy = Proxy()
 
 # custom proxy
-proxy = Proxy()
 proxy.change_to_custom_mode(Consts.PROXY_TYPE_SOCKS5, '127.0.0.1', '10808')
-bypass_ls = ['*.ipinfo.io', 'ixbrowser.com']
-proxy.set_bypass_list(bypass_ls)
 
 # purchased proxy
 # proxy.change_to_purchased_mode(1)
@@ -26,20 +26,35 @@ proxy.set_bypass_list(bypass_ls)
 # traffic package proxy
 # proxy.change_to_traffic_package_mode(1, 'us', ip_policy=True, ip_detection=True)
 
+# extract from url
+'''
+json_mapping = proxy.get_url_extraction_mode_json_mapping("ip", "port")
+proxy.change_to_url_extraction_mode('https://127.0.0.1/extract_url', 
+                                    format_type=Consts.PROXY_DATA_FROMAT_TYPE_JSON,
+                                    json_mapping=json_mapping
+                                    )
+'''
+
+bypass_ls = ['*.ipinfo.io', 'ixbrowser.com']
+proxy.set_bypass_list(bypass_ls)
+
 p.proxy_config = proxy
 
 preference = Preference()
+preference.set_cloud_backup(1, 1, 0)
 preference.block_audio = 1
 preference.block_image = 1
-preference.cookies_backup = 0
 preference.open_url = 'https://www.google.com'
+preference.load_profile_info_page = 0
 p.preference_config = preference
 
 fingerprint = Fingerprint()
 fingerprint.language_type = 2
 fingerprint.language = 'cn'
 fingerprint.client_rects = 0
+fingerprint.set_device_name('rand_' + str(int(time.time())))
 p.fingerprint_config = fingerprint
+
 
 
 """

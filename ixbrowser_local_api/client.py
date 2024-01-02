@@ -20,13 +20,14 @@ class IXBrowserClient(object):
 
         self.show_request_log = False
 
-    def get_profile_list(self, keyword=None, group_id=0, page=1, limit=10):
+    def get_profile_list(self, keyword=None, group_id=0, page=1, limit=10, tag_id=0):
         """
         get profile list
         :param keyword:
         :param group_id:
         :param page:
         :param limit:
+        :param tag_id:
         :return: list
         """
         url = self.base_url + Consts.ACTION_FOR_PROFILE_LIST
@@ -35,6 +36,9 @@ class IXBrowserClient(object):
         params['limit'] = limit
         if group_id > 0:
             params['group_id'] = group_id
+        
+        if tag_id > 0:
+            params['tag_id'] = tag_id
 
         if keyword is not None and keyword != '':
             params['name'] = keyword
@@ -210,11 +214,51 @@ class IXBrowserClient(object):
         """
         create profile
         :param profile: Profile entity class
-        :return: integer
+        :return: True
         """
         url = self.base_url + Consts.ACTION_FOR_PROFILE_CREATE
 
         params = profile.dump_to_dict()
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def create_profile_by_copying(self, profile_id, name=None, group_id=None, site_id=None, site_url=None):
+        """
+        create profile by copying
+        :param profile_id: 
+        :param name: 
+        :param group_id: 
+        :param site_id: 
+        :param site_url: 
+        :return: True
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_COPY
+        params = dict()
+        params['profile_id'] = profile_id
+        if name is not None:
+            params['name'] = name
+            
+        if group_id is not None:
+            params['group_id'] = group_id
+
+        if site_id is not None:
+            params['site_id'] = site_id
+            if site_id == Consts.DEFAULT_SITE_ID_BLANK_PAGE:
+                site_url = None
+
+        if site_url is not None:
+            params['site_url'] = site_url
         try:
             self.code = None
             Utils.show_request_log = self.show_request_log
@@ -876,6 +920,107 @@ class IXBrowserClient(object):
         url = self.base_url + Consts.ACTION_FOR_PROXY_DELETE
         params = dict()
         params['id'] = proxy_id
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def get_tag_list(self, page=1, limit=100):
+        """
+        get tag list
+        :param page:
+        :param limit:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_TAG_LIST
+        params = dict()
+        params['page'] = page
+        params['limit'] = limit
+
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            self.total = result['total']
+            return result['data']
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def create_tag(self, name):
+        """
+        create tag
+        :param name:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_TAG_CREATE
+        params = dict()
+        params['title'] = name
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def update_tag(self, tag_id, name, sort=None):
+        """
+        update tag
+        :param tag_id:
+        :param name:
+        :param sort:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_TAG_UPDATE
+        params = dict()
+        params['id'] = tag_id
+        params['title'] = name
+        if sort is not None:
+            params['sort'] = sort
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def delete_tag(self, tag_id):
+        """
+        delete tag
+        :param tag_id:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_TAG_DELETE
+        params = dict()
+        params['id'] = tag_id
         try:
             self.code = None
             Utils.show_request_log = self.show_request_log
