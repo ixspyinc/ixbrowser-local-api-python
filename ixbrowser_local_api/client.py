@@ -77,7 +77,11 @@ class IXBrowserClient(object):
         params['load_extensions'] = load_extensions
         params['load_profile_info_page'] = load_profile_info_page
         params['cookies_backup'] = cookies_backup
-        params['cookie'] = cookie
+        
+        # None appears as null in json, which will cause cookie loading to fail.
+        if cookie is not None:
+            params['cookie'] = cookie
+
         if startup_args is None:
             startup_args = []
         if disable_extension_welcome_page:
@@ -116,7 +120,11 @@ class IXBrowserClient(object):
         params['profile_id'] = profile_id
         params['load_extensions'] = load_extensions
         params['load_profile_info_page'] = load_profile_info_page
-        params['cookie'] = cookie
+
+        # None appears as null in json, which will cause cookie loading to fail.
+        if cookie is not None:
+            params['cookie'] = cookie
+
         if startup_args is None:
             startup_args = []
         if disable_extension_welcome_page:
