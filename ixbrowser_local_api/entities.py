@@ -372,6 +372,7 @@ class Fingerprint(object):
 
         self.webrtc = None
 
+        # 1: Random, 2: Customized, 3: Close
         self.webgl_data_type = None
         self.webgl_image = None
         self.webgl_factory = None

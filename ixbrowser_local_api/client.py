@@ -4,7 +4,6 @@ from .utils import Utils
 from .consts import Consts
 from .entities import Profile, Proxy, Preference, Fingerprint
 
-
 class IXBrowserClient(object):
     def __init__(self, target=Consts.DEFAULT_API_TARGET, port=Consts.DEFAULT_API_PORT):
         """
@@ -103,7 +102,7 @@ class IXBrowserClient(object):
 
     def open_profile_with_random_fingerprint(self, profile_id, load_extensions=True, load_profile_info_page=False,
                                              cookie=None, disable_extension_welcome_page=True, startup_args=[],
-                                             proxy_config: Proxy = None):
+                                             proxy_config: Proxy = None, fingerprint_config: Fingerprint = None):
         """
         open profile with random fingerprint
         :param profile_id:
@@ -113,6 +112,7 @@ class IXBrowserClient(object):
         :param disable_extension_welcome_page:
         :param startup_args:
         :param proxy_config:
+        :param fingerprint_config:
         :return:
         """
         url = self.base_url + Consts.ACTION_FOR_PROFILE_OPEN_WITH_FINGERPRINT
@@ -134,6 +134,9 @@ class IXBrowserClient(object):
         if proxy_config is not None:
             params['proxy_config'] = proxy_config.dump_to_dict()
 
+        if fingerprint_config is not None:
+            params['fingerprint_config'] = fingerprint_config.dump_to_dict()
+
         try:
             self.code = None
             Utils.show_request_log = self.show_request_log
@@ -150,9 +153,6 @@ class IXBrowserClient(object):
     def close_profile(self, profile_id):
         """
         close profile
-        The window is currently closed by killing the process, so it is not recommended at this time.
-        It is recommended to use selenium's close method to close the profile.
-        For example IXBrowserClient.close_profile_via_selenium
         :param profile_id:
         :return:
         """
@@ -174,11 +174,13 @@ class IXBrowserClient(object):
             return None
         else:
             return True
-
+        
     @staticmethod
     def close_profile_via_selenium(obj):
         """
-        Alias method of close_profile
+        close_profile will no longer have a shutdown exception prompt, and selenium-specific methods are no longer needed.
+        
+        Alias method of close_profile, will be deprecated in the future
         :param obj: selenium.webdriver.chrome instance
         :return:
         """
@@ -559,7 +561,6 @@ class IXBrowserClient(object):
         else:
             return True
 
-
     def update_profile_groups_in_batches(self, profile_id, group_id):
         """
         update profile groups in batches
@@ -597,6 +598,27 @@ class IXBrowserClient(object):
         url = self.base_url + Consts.ACTION_FOR_PROFILE_DELETE
         params = dict()
         params['profile_id'] = profile_id
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def empty_recycle_bin(self):
+        """
+        Empty all Profiles in the Recycle Bin
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_EMPTY_RECYCLE_BIN
+        params = dict()
         try:
             self.code = None
             Utils.show_request_log = self.show_request_log

@@ -32,6 +32,7 @@ class Consts:
     ACTION_FOR_PROFILE_CLEAR_CACHE = 'profile-clear-cache'
     ACTION_FOR_PROFILE_GET_COOKIES = 'profile-get-cookies'
     ACTION_FOR_PROFILE_UPDATE_COOKIES = 'profile-update-cookies'
+    ACTION_FOR_PROFILE_EMPTY_RECYCLE_BIN = "empty-recycle-bin"
 
     ACTION_FOR_PROFILE_UPDATE_GROUPS_IN_BATCHES = 'profile-update-groups-in-batches'
 

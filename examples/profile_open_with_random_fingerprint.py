@@ -2,7 +2,7 @@ import sys
 import time
 import random
 sys.path.insert(0, sys.path[0]+"/../")
-from ixbrowser_local_api import IXBrowserClient, Proxy, Consts
+from ixbrowser_local_api import IXBrowserClient, Proxy, Consts, Fingerprint
 
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
@@ -26,20 +26,27 @@ c.show_request_log = True
 # Make sure the profile has been created
 profile_id = 1
 
-'''
-p = Proxy()
-p.proxy_mode = Consts.PROXY_MODE_CUSTOM
-p.proxy_type = 'socks5'
-p.proxy_ip = '192.168.7.96'
-p.proxy_port = '20201'
-open_result = c.open_profile_with_random_fingerprint(profile_id, load_profile_info_page=False, proxy_config=p)
-'''
-open_result = c.open_profile_with_random_fingerprint(profile_id, load_profile_info_page=False)
+# Allow partial fingerprints to specify values in random mode
+f = Fingerprint()
+f.ua_info = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
+f.track= 0
+
+open_result = c.open_profile_with_random_fingerprint(profile_id, load_profile_info_page=False, fingerprint_config=f)
 if open_result is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Open profile error:')
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
     sys.exit()
+
+'''
+# Random fingerprint mode while modifying IP proxy
+p = Proxy()
+p.proxy_mode = Consts.PROXY_MODE_CUSTOM
+p.proxy_type = 'socks5'
+p.proxy_ip = '127.0.0.1'
+p.proxy_port = '10808'
+open_result = c.open_profile_with_random_fingerprint(profile_id, load_profile_info_page=False, proxy_config=p)
+'''
 
 web_driver_path = open_result['webdriver']
 debugging_address = open_result['debugging_address']

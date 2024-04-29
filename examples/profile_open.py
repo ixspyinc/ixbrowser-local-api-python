@@ -68,7 +68,9 @@ if close_result is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
     sys.exit()
 """
-# If using selenium, it is recommended to use the following method to close
-c.close_profile_via_selenium(driver)
+
+# Improve the close method so that there will be no abnormal shutdown prompt on subsequent startups.
+c.close_profile(profile_id)
+
 
 print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'window closed.')

@@ -89,6 +89,16 @@ if data is None:
 else:
     print(data)
 """
+"""
+# empty recycle in
+data = c.empty_recycle_bin()
+if data is None:
+    print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
+    print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
+else:
+    print(data)
+    print('recycle bin has been emptied.')
+"""
 
 """
 # close profile in batches
