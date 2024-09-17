@@ -55,22 +55,17 @@ chrome_options.add_experimental_option("debuggerAddress", debugging_address)
 driver = Chrome(service=Service(web_driver_path), options=chrome_options)
 
 print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Visit the ixBrowser homepage by default')
+
 driver.get("https://www.ixbrowser.com")
 print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Automatically exit after 30 seconds')
 time.sleep(30)
 
-"""
-# close_profile is currently a forced process kill method, which will cause browser exceptions.
+# close profile
 close_result = c.close_profile(profile_id)
 if close_result is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Close profile error:')
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
     sys.exit()
-"""
-
-# Improve the close method so that there will be no abnormal shutdown prompt on subsequent startups.
-c.close_profile(profile_id)
-
 
 print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'window closed.')

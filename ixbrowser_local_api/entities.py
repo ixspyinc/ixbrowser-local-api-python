@@ -99,6 +99,8 @@ class Proxy(object):
         self.proxy_user = None
         self.proxy_password = None
 
+        self.proxy_check_line = None
+
         self.country = None
         self.city = None
         self.gateway = None
@@ -202,8 +204,7 @@ class Proxy(object):
         self.proxy_id = proxy_id
         return True
 
-    def change_to_custom_mode(self, proxy_type=Consts.PROXY_TYPE_DIRECT, proxy_ip=None, proxy_port=None,
-                              proxy_user=None, proxy_password=None):
+    def change_to_custom_mode(self, proxy_type=Consts.PROXY_TYPE_DIRECT, proxy_ip=None, proxy_port=None, proxy_user=None, proxy_password=None, proxy_check_line=None):
         """
 
         :param proxy_type:
@@ -211,6 +212,7 @@ class Proxy(object):
         :param proxy_port:
         :param proxy_user:
         :param proxy_password:
+        :param proxy_check_line:
         :return:
         """
         self.reset_all_attributes()
@@ -224,6 +226,10 @@ class Proxy(object):
             self.proxy_user = proxy_user
         if proxy_password is not None:
             self.proxy_password = proxy_password
+        if proxy_check_line is None:
+            self.proxy_check_line = Consts.DEFAULT_PROXY_CHECK_LINE
+        else:
+            self.proxy_check_line = proxy_check_line
         return True
 
     def change_to_url_extraction_mode(self, proxy_url, 
@@ -231,7 +237,8 @@ class Proxy(object):
                                       proxy_type=Consts.PROXY_TYPE_SOCKS5, 
                                       extract_method = Consts.PROXY_EXTRACT_FROM_URL_FRESH_TYPE_WHEN_INVALID,
                                       txt_mapping = None,
-                                      json_mapping = None):
+                                      json_mapping = None,
+                                      proxy_check_line=Consts.DEFAULT_PROXY_CHECK_LINE):
         """
 
         :param proxy_url:
@@ -240,6 +247,7 @@ class Proxy(object):
         :param extract_method:
         :param txt_mapping:
         :param json_mapping:
+        :param proxy_check_line:
         :return:
         """
         self.reset_all_attributes()
@@ -266,6 +274,11 @@ class Proxy(object):
         self.proxy_type = proxy_type
 
         self.proxy_extraction_method = extract_method
+
+        if proxy_check_line is None:
+            self.proxy_check_line = Consts.DEFAULT_PROXY_CHECK_LINE
+        else:
+            self.proxy_check_line = proxy_check_line
 
         return True
     
@@ -300,6 +313,7 @@ class Preference(object):
         self.cookies_backup = None
         self.indexed_db_backup =None
         self.local_storage_backup = None
+        self.extension_data_backup = None
         self.label_management = None
         self.open_url = None
         self.block_image = None
@@ -311,7 +325,7 @@ class Preference(object):
                 if hasattr(self, k):
                     setattr(self, k, v)
 
-    def set_cloud_backup(self, save_cookies=1, save_indexed_db=0, save_local_storage=0):
+    def set_cloud_backup(self, save_cookies=1, save_indexed_db=0, save_local_storage=0, extension_data_backup=0):
         
         self.cookies_backup = save_cookies
 
@@ -319,9 +333,11 @@ class Preference(object):
         if self.cookies_backup == 0:
             self.indexed_db_backup = 0
             self.local_storage_backup = 0
+            self.extension_data_backup = 0
         else:
             self.indexed_db_backup =save_indexed_db
             self.local_storage_backup = save_local_storage
+            self.extension_data_backup = extension_data_backup
 
     def reset_all_attributes(self):
         for k, v in self.__dict__.items():

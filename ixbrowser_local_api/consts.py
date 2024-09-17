@@ -22,6 +22,8 @@ class Consts:
     ACTION_FOR_PROFILE_OPEN_WITH_FINGERPRINT = 'profile-open-with-random-fingerprint'
     ACTION_FOR_PROFILE_CLOSE = 'profile-close'
     ACTION_FOR_PROFILE_CLOSE_IN_BATCHES = 'profile-close-in-batches'
+    ACTION_FOR_PROFILE_OPENED_LIST = 'profile-opened-list'
+    ACTION_FOR_PROFILE_OPENED_LIST_ARRAGE_TILE = 'profile-opened-list-arrage-tile'
 
     ACTION_FOR_PROFILE_CREATE = 'profile-create'
     ACTION_FOR_PROFILE_UPDATE = 'profile-update'
@@ -66,6 +68,10 @@ class Consts:
 
     ACTION_FOR_PROXY_TAG_LIST = 'proxy-tag-list'
 
+    ACTION_FOR_GATEWAY_LIST = 'gateway-list'
+    ACTION_FOR_GATEWAY_SWITCH = 'gateway-switch'
+    
+
     # Proxy Mode
     PROXY_MODE_TRAFFIC_PACKAGE = 1
     PROXY_MODE_CUSTOM = 2
@@ -79,6 +85,11 @@ class Consts:
     PROXY_TYPE_HTTPS = 'https'
     PROXY_TYPE_SOCKS5 = 'socks5'
     PROXY_TYPE_SSH = 'ssh'
+
+    # proxy_check_line
+    PROXY_CHECK_LINE_GLOBAL = 'global_line'
+    PROXY_CHECK_LINE_CN = 'cn_line'
+    DEFAULT_PROXY_CHECK_LINE = PROXY_CHECK_LINE_GLOBAL
 
     # Proxy Data Format Type
     PROXY_DATA_FROMAT_TYPE_TXT = 'txt'

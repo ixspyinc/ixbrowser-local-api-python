@@ -5,8 +5,8 @@ from ixbrowser_local_api import IXBrowserClient
 
 c = IXBrowserClient()
 
-"""
 # clear profile cache by profile id list
+"""
 profile_id = [250, 251]
 data = c.clear_profile_cache(profile_id)
 if data is None:
@@ -16,8 +16,8 @@ else:
     print(data)
 """
 
-"""
 # update profile to purchased proxy mode
+"""
 proxy_id = 29040
 profile_id = 250
 data = c.update_profile_to_purchased_proxy_mode(profile_id, proxy_id)
@@ -28,8 +28,8 @@ else:
     print(data)
 """
 
-"""
 # update profile to custom proxy mode
+"""
 profile_id = 250
 proxy_type = 'direct'
 # proxy_type = 'socks5'
@@ -44,8 +44,8 @@ else:
     print(data)
 """
 
-"""
 # random profile fingerprint
+"""
 profile_id = 250
 data = c.random_profile_fingerprint(profile_id)
 if data is None:
@@ -55,8 +55,8 @@ else:
     print(data)
 """
 
-"""
 # get profile cookies
+"""
 profile_id = 251
 data = c.get_profile_cookies(profile_id)
 if data is None:
@@ -66,8 +66,8 @@ else:
     print(data)
 """
 
-"""
 # update profile cookies
+"""
 profile_id = 250
 cookie = None
 data = c.update_profile_cookie(profile_id, cookie)
@@ -78,8 +78,8 @@ else:
     print(data)
 """
 
-"""
 # delete profile
+"""
 profile_id = 250
 cookie = None
 data = c.delete_profile(profile_id)
@@ -89,8 +89,9 @@ if data is None:
 else:
     print(data)
 """
-"""
+
 # empty recycle in
+"""
 data = c.empty_recycle_bin()
 if data is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
@@ -100,8 +101,8 @@ else:
     print('recycle bin has been emptied.')
 """
 
-"""
 # close profile in batches
+"""
 profile_id = [254, 251]
 
 for p_id in profile_id:
@@ -123,8 +124,8 @@ else:
     print(profile_id, 'result:', data)
 """
 
-"""
 # update profile to traffic package mode
+"""
 profile_id = 250
 proxy_id = 10
 country = 'us'
@@ -139,8 +140,8 @@ else:
     print(data)
 """
 
-"""
 # update profile groups in_batches
+"""
 profile_id = [250, 251]
 proxy_id = 77
 data = c.update_profile_groups_in_batches(profile_id, proxy_id)
@@ -150,8 +151,9 @@ if data is None:
 else:
     print(data)
 """
-"""
+
 # create group
+"""
 name = 'test'
 sort = 1000
 data = c.create_group(name, sort)
@@ -162,8 +164,8 @@ else:
     print(data)
 """
 
-"""
 # update group
+"""
 group_id = 7392
 name = 'test1'
 data = c.update_group(group_id, name, sort=999)
@@ -174,8 +176,8 @@ else:
     print(data)
 """
 
-"""
 # delete group
+"""
 group_id = 7392
 data = c.delete_group(group_id)
 if data is None:
@@ -185,8 +187,8 @@ else:
     print(data)
 """
 
-"""
 # create custom proxy
+"""
 proxy_type = 'socks5'
 proxy_ip = '192.168.7.92'
 proxy_port = '20001'
@@ -201,8 +203,8 @@ else:
     print(data)
 """
 
-"""
 # update custom proxy
+"""
 proxy_id = 757041
 proxy_type = 'http'
 proxy_ip = '192.168.7.93'
@@ -218,8 +220,8 @@ else:
     print(data)
 """
 
-"""
 # delete proxy
+"""
 proxy_id = 757071
 data = c.delete_proxy(proxy_id)
 if data is None:
@@ -228,3 +230,47 @@ if data is None:
 else:
     print(data)
 """
+
+
+# get opened profile list
+""" 
+data = c.get_opened_profile_list()
+if data is None:
+    print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
+    print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
+else:
+    print(data)
+""" 
+
+
+# arrage tile opened profile
+""" 
+data = c.arrage_tile_opened_profile()
+if data is None:
+    print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
+    print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
+else:
+    print(data)
+""" 
+
+# get gateway list
+""" """
+data = c.get_gateway_list()
+if data is None:
+    print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
+    print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
+else:
+    print(data)
+""" """
+
+# switch gateway
+""" 
+gateway_id = 2
+data = c.switch_gateway(gateway_id)
+if data is None:
+    print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
+    print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
+else:
+    print(data)
+""" 
+

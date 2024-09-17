@@ -57,6 +57,26 @@ class IXBrowserClient(object):
         else:
             return True
 
+    def get_opened_profile_list(self):
+        """
+        get opened profile list
+        :return: list
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_OPENED_LIST
+        params = dict()
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            return Utils.get_api_response(url, params)
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
     def open_profile(self, profile_id, load_extensions=True, load_profile_info_page=False, cookies_backup=True,
                      cookie=None, disable_extension_welcome_page=True, startup_args=[]):
         """
@@ -150,6 +170,27 @@ class IXBrowserClient(object):
         else:
             return True
 
+    def arrage_tile_opened_profile(self):
+        """
+        arrage tile opened profile
+        :return: Bool
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_OPENED_LIST_ARRAGE_TILE
+        params = dict()
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            Utils.get_api_response(url, params)
+            return True
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
     def close_profile(self, profile_id):
         """
         close profile
@@ -178,7 +219,7 @@ class IXBrowserClient(object):
     @staticmethod
     def close_profile_via_selenium(obj):
         """
-        close_profile will no longer have a shutdown exception prompt, and selenium-specific methods are no longer needed.
+        [warning]close_profile is working properly, this function will be removed soon.
         
         Alias method of close_profile, will be deprecated in the future
         :param obj: selenium.webdriver.chrome instance
@@ -373,8 +414,7 @@ class IXBrowserClient(object):
         else:
             return True
 
-    def update_profile_to_custom_proxy_mode(self, profile_id, proxy_type=Consts.PROXY_TYPE_DIRECT, proxy_ip=None,
-                                            proxy_port=None, proxy_user=None, proxy_password=None):
+    def update_profile_to_custom_proxy_mode(self, profile_id, proxy_type=Consts.PROXY_TYPE_DIRECT, proxy_ip=None, proxy_port=None, proxy_user=None, proxy_password=None, proxy_check_line=None):
         """
         update profile to custom proxy mode
         :param profile_id:
@@ -383,6 +423,7 @@ class IXBrowserClient(object):
         :param proxy_port:
         :param proxy_user:
         :param proxy_password:
+        :param proxy_check_line:
         :return: string
         """
         url = self.base_url + Consts.ACTION_FOR_PROFILE_UPDATE_PROXY_TO_CUSTOM_MODE
@@ -399,6 +440,10 @@ class IXBrowserClient(object):
             params['proxy_info']['proxy_user'] = proxy_user
         if proxy_password is not None:
             params['proxy_info']['proxy_password'] = proxy_password
+        if proxy_check_line is not None:
+            params['proxy_info']['proxy_check_line'] = proxy_check_line
+        else:
+            params['proxy_info']['proxy_check_line'] = Consts.DEFAULT_PROXY_CHECK_LINE
         try:
             self.code = None
             Utils.show_request_log = self.show_request_log
@@ -1064,3 +1109,47 @@ class IXBrowserClient(object):
             return None
         else:
             return True
+
+    def get_gateway_list(self):
+        """
+        get gateway list
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_GATEWAY_LIST
+        params = dict()
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            return Utils.get_api_response(url, params)
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def switch_gateway(self, gateway_id):
+        """
+        switch gateway
+        :param gateway_id:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_GATEWAY_SWITCH
+        params = dict()
+        params['id'] = gateway_id
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            Utils.get_api_response(url, params)
+            return True
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
