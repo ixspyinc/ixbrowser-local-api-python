@@ -19,7 +19,7 @@ class IXBrowserClient(object):
 
         self.show_request_log = False
 
-    def get_profile_list(self, keyword=None, group_id=0, page=1, limit=10, tag_id=0):
+    def get_profile_list(self, keyword=None, group_id=0, page=1, limit=10, tag_id=0, profile_id=0):
         """
         get profile list
         :param keyword:
@@ -27,20 +27,24 @@ class IXBrowserClient(object):
         :param page:
         :param limit:
         :param tag_id:
+        :param profile_id:
         :return: list
         """
         url = self.base_url + Consts.ACTION_FOR_PROFILE_LIST
         params = dict()
-        params['page'] = page
-        params['limit'] = limit
-        if group_id > 0:
-            params['group_id'] = group_id
-        
-        if tag_id > 0:
-            params['tag_id'] = tag_id
+        if profile_id == 0:
+            params['page'] = page
+            params['limit'] = limit
+            if group_id > 0:
+                params['group_id'] = group_id
+            
+            if tag_id > 0:
+                params['tag_id'] = tag_id
 
-        if keyword is not None and keyword != '':
-            params['name'] = keyword
+            if keyword is not None and keyword != '':
+                params['name'] = keyword
+        else:
+            params['profile_id'] = profile_id
 
         try:
             self.code = None
@@ -102,10 +106,14 @@ class IXBrowserClient(object):
             params['cookie'] = cookie
 
         if startup_args is None:
-            startup_args = []
-        if disable_extension_welcome_page:
-            startup_args.append('--disable-extension-welcome-page')
-        params['args'] = startup_args
+            copy_startup_args = []
+        else:
+            copy_startup_args = startup_args.copy()
+            # opy_startup_args = [i for i in startup_args]
+
+        if disable_extension_welcome_page and '--disable-extension-welcome-page' not in copy_startup_args:
+            copy_startup_args.append('--disable-extension-welcome-page')
+        params['args'] = copy_startup_args
 
         try:
             self.code = None
@@ -145,11 +153,16 @@ class IXBrowserClient(object):
         if cookie is not None:
             params['cookie'] = cookie
 
+        
         if startup_args is None:
-            startup_args = []
-        if disable_extension_welcome_page:
-            startup_args.append('--disable-extension-welcome-page')
-        params['args'] = startup_args
+            copy_startup_args = []
+        else:
+            copy_startup_args = startup_args.copy()
+            # opy_startup_args = [i for i in startup_args]
+
+        if disable_extension_welcome_page and '--disable-extension-welcome-page' not in copy_startup_args:
+            copy_startup_args.append('--disable-extension-welcome-page')
+        params['args'] = copy_startup_args
 
         if proxy_config is not None:
             params['proxy_config'] = proxy_config.dump_to_dict()
@@ -735,10 +748,36 @@ class IXBrowserClient(object):
     def clear_profile_cache(self, profile_id):
         """
         clear profile cache
-        :param profile_id:
+        :param profile_id: profile id or  profile id list
         :return:
         """
         url = self.base_url + Consts.ACTION_FOR_PROFILE_CLEAR_CACHE
+        params = dict()
+        if isinstance(profile_id, list):
+            params['profile_id'] = profile_id
+        else:
+            params['profile_id'] = [profile_id]
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def clear_profile_cache_and_cookies(self, profile_id):
+        """
+        clear profile cache and cookies
+        :param profile_id: profile id or  profile id list
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_CLEAR_CACHE_AND_COOKIES
         params = dict()
         if isinstance(profile_id, list):
             params['profile_id'] = profile_id

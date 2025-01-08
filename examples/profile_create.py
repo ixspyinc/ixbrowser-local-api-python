@@ -53,6 +53,10 @@ fingerprint.language_type = 2
 fingerprint.language = 'cn'
 fingerprint.client_rects = 0
 fingerprint.set_device_name('rand_' + str(int(time.time())))
+
+# fingerprint.webgpu_data_type = 1
+# fingerprint.javascript_memory_type = 1
+
 p.fingerprint_config = fingerprint
 
 

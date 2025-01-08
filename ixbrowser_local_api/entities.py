@@ -394,6 +394,12 @@ class Fingerprint(object):
         self.webgl_factory = None
         self.webgl_info = None
 
+        # 0: Disabled, 1: Real, 2: Based on WebGL, Default: 2
+        self.webgpu_data_type = None
+
+        # 0: Normal, 1: Maximum, Default: 0
+        self.javascript_memory_type = None
+
         self.canvas_type = None
         self.audio_context = None
         self.media_equipment = None
