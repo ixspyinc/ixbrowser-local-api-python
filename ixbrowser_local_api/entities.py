@@ -16,6 +16,7 @@ class Profile(object):
         self.tag = None
         self.username = None
         self.password = None
+        self.tfa_secret = None
         self.cookie = None
         self.proxy_config = None
         self.fingerprint_config = None
@@ -117,6 +118,12 @@ class Proxy(object):
         self.proxy_data_json_format = None
         self.proxy_extraction_method = None
         self.proxy_url = None
+
+        # Use system proxy, Default=1
+        # 1: Follow global settings 
+        # 2: Use 
+        # 3: Do not use 
+        self.use_system_proxy = None
 
         if proxy_dict is not None and isinstance(proxy_dict, dict):
             for k, v in proxy_dict.items():
@@ -320,6 +327,30 @@ class Preference(object):
         self.block_audio = None
         self.load_profile_info_page = None
 
+        # Disable password page popup
+        # 0: Disable 1: Enable Default: 0
+        self.block_password_pages = None
+
+        # Disable restore page popup
+        # 0: Disable 1: Enable Default: 1
+        self.block_restore_pages = None
+
+        # Disable pop-up blocking
+        # 0: Disable 1: Enable Default: 1
+        self.block_popup_blocking = None
+
+        # Show passwrod in profile info page
+        # 0: Disable 1: Enable Default: 0
+        self.show_password = None
+
+        # Automatically load imported bookmarks
+        # 0: Disable 1: Enable Default: 0
+        self.load_bookmarks = None
+
+        # Show bookmarks bar
+        # 0: Hidden 1:Show  Default: 0
+        self.show_bookmarks_bar = None
+
         if preference_dict is not None and isinstance(preference_dict, dict):
             for k, v in preference_dict.items():
                 if hasattr(self, k):
@@ -358,9 +389,21 @@ class Preference(object):
 class Fingerprint(object):
     def __init__(self, fingerprint_dict=None):
 
-        self.platform = None
+        # User Agent Type, Default: 1
+        # 1: PC 
+        # 2: Mobile Phone 
         self.ua_type = None
         self.ua_info = None
+
+        # Windows/Macos/Android/IOS Default is Windows
+        # When ua_type is 1, it only supports Windows/Macos, 
+        # when ua_type is 2, it only supports Android/IOS
+        self.platform = None
+
+        # Hide debug panel, Default: 1 (valid only when ua_type is 2)
+        # 1: Enable 
+        # 2: Disable 
+        self.hide_debug_panel = None
 
         self.kernel_version = None
         self.device_name_source = None
@@ -409,6 +452,7 @@ class Fingerprint(object):
         self.track = None
         self.allow_scan_ports = None
         self.allow_scan_ports_content = None
+        self.cloudflare_challenge_bypassing = None
 
         if fingerprint_dict is not None and isinstance(fingerprint_dict, dict):
             for k, v in fingerprint_dict.items():

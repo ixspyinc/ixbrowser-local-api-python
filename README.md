@@ -46,6 +46,7 @@ else:
 		print('Error message=', c.message)
 	else:
 		print(open_result)
+		# open_result contains "webdriver" and "debugging_address" fields, which can be used for integration with Selenium or Playwright etc.
 ```
 
 Advance use

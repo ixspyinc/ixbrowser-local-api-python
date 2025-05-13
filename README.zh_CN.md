@@ -46,6 +46,7 @@ else:
 		print('错误描述=', c.message)
 	else:
 		print(open_result)
+		# open_result 包含 "webdriver" 和 "debugging_address" 字段, 后续可用于 Selenium或Playwright等等集成。
 ```
 
 更多高级参考

@@ -81,6 +81,26 @@ class IXBrowserClient(object):
         else:
             return True
 
+    def get_native_opened_profile_list(self):
+        """
+        get native opened profile list
+        :return: list
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_NATIVE_OPENED_LIST
+        params = dict()
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            return Utils.get_api_response(url, params)
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+    
     def open_profile(self, profile_id, load_extensions=True, load_profile_info_page=False, cookies_backup=True,
                      cookie=None, disable_extension_welcome_page=True, startup_args=[]):
         """
@@ -183,13 +203,61 @@ class IXBrowserClient(object):
         else:
             return True
 
-    def arrage_tile_opened_profile(self):
+    def arrange_tile_opened_profile(self, screen=None, layout=None, adaptive=None, starting_position_x=None, starting_position_y=None, profile_size_width=None, profile_size_hight=None, profile_spacing_horizontal=None, profile_spacing_vertical=None, profile_deviaton_x=None, profile_deviaton_y=None, per_line_number_of_profiles=None):
         """
-        arrage tile opened profile
+        arrage tile opened profile list
+        :param screen:
+        :param layout:
+        :param adaptive:
+        :param starting_position_x:
+        :param starting_position_y:
+        :param profile_size_width:
+        :param profile_size_hight:
+        :param profile_spacing_horizontal:
+        :param profile_spacing_vertical:
+        :param profile_deviaton_x:
+        :param profile_deviaton_y:
+        :param per_line_number_of_profiles:
+
         :return: Bool
         """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_OPENED_LIST_ARRAGE_TILE
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_OPENED_LIST_ARRANGE_TILE
         params = dict()
+        if screen is not None:
+            params['screen'] = screen
+        
+        if layout is not None:
+            params['layout'] = layout
+        
+        if adaptive is not None:
+            params['adaptive'] = adaptive
+        
+        if starting_position_x is not None:
+            params['starting_position_x'] = starting_position_x
+        
+        if starting_position_y is not None:
+            params['starting_position_y'] = starting_position_y
+        
+        if profile_size_width is not None:
+            params['profile_size_width'] = profile_size_width
+        
+        if profile_size_hight is not None:
+            params['profile_size_hight'] = profile_size_hight
+        
+        if profile_spacing_horizontal is not None:
+            params['profile_spacing_horizontal'] = profile_spacing_horizontal
+        
+        if profile_spacing_vertical is not None:
+            params['profile_spacing_vertical'] = profile_spacing_vertical
+        
+        if profile_deviaton_x is not None:
+            params['profile_deviaton_x'] = profile_deviaton_x
+        
+        if profile_deviaton_y is not None:
+            params['profile_deviaton_y'] = profile_deviaton_y
+        
+        if per_line_number_of_profiles is not None:
+            params['per_line_number_of_profiles'] = per_line_number_of_profiles
         try:
             self.code = None
             Utils.show_request_log = self.show_request_log
@@ -382,7 +450,7 @@ class IXBrowserClient(object):
             params['proxy_info']['city'] = city
 
         if gateway is None:
-            params['proxy_info']['gateway'] = Consts.DEFAULT_TRAFFIC_PACKAGE_GATEWAY
+            params['proxy_info']['gateway'] = Consts.DEFAULT_DATA_PACKAGE_GATEWAY
         else:
             params['proxy_info']['gateway'] = gateway
 
@@ -961,28 +1029,45 @@ class IXBrowserClient(object):
         else:
             return True
 
-    def create_proxy(self, proxy_type, proxy_ip, proxy_port, proxy_user=None, proxy_password=None, note=None):
+    def get_proxy_tag_list(self, name=None, page=1, limit=100):
         """
-        create proxy
-        :param proxy_type:
-        :param proxy_ip:
-        :param proxy_port:
-        :param proxy_user:
-        :param proxy_password:
-        :param note:
+        get proxy tag list
+        :param name:
+        :param page:
+        :param limit:
         :return:
         """
-        url = self.base_url + Consts.ACTION_FOR_PROXY_CREATE
+        url = self.base_url + Consts.ACTION_FOR_PROXY_TAG_LIST
         params = dict()
-        params['proxy_type'] = proxy_type
-        params['proxy_ip'] = proxy_ip
-        params['proxy_port'] = proxy_port
-        if proxy_user is not None:
-            params['proxy_user'] = proxy_user
-        if proxy_password is not None:
-            params['proxy_password'] = proxy_password
-        if note is not None:
-            params['note'] = note
+        if name is not None:
+            params['title'] = name
+        params['page'] = page
+        params['limit'] = limit
+
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            self.total = result['total']
+            return result['data']
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def create_proxy_tag(self, name):
+        """
+        create proxy tag
+        :param name:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROXY_TAG_CREATE
+        params = dict()
+        params['title'] = name
         try:
             self.code = None
             Utils.show_request_log = self.show_request_log
@@ -997,20 +1082,125 @@ class IXBrowserClient(object):
         else:
             return True
 
-    def update_proxy(self, proxy_id, name, sort=None):
+    def update_proxy_tag(self, id, name):
+        """
+        update proxy tag
+        :param id:
+        :param title:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROXY_TAG_UPDATE
+        params = dict()
+        params['id'] = id
+        params['title'] = name
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def delete_proxy_tag(self, id):
+        """
+        delete tag
+        :param id:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROXY_TAG_DELETE
+        params = dict()
+        params['id'] = id
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def create_proxy(self, proxy_type, proxy_ip, proxy_port, proxy_user=None, proxy_password=None, note=None, tag=None):
+        """
+        create proxy
+        :param proxy_type:
+        :param proxy_ip:
+        :param proxy_port:
+        :param proxy_user:
+        :param proxy_password:
+        :param note:
+        :param tag:
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROXY_CREATE
+        params = dict()
+        params['proxy_type'] = proxy_type
+        params['proxy_ip'] = proxy_ip
+        params['proxy_port'] = proxy_port
+        if proxy_user is not None:
+            params['proxy_user'] = proxy_user
+        if proxy_password is not None:
+            params['proxy_password'] = proxy_password
+        if note is not None:
+            params['note'] = note
+        
+        if tag is not None:
+            params['tag'] = tag
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+        
+    def update_proxy(self, proxy_id, proxy_type=None, proxy_ip=None, proxy_port=None, proxy_user=None, proxy_password=None, note=None, tag=None):
         """
         update proxy
         :param proxy_id:
-        :param name:
-        :param sort:
+        :param proxy_type:
+        :param proxy_ip:
+        :param proxy_port:
+        :param proxy_user:
+        :param proxy_password:
+        :param note:
+        :param tag:
         :return:
         """
-        url = self.base_url + Consts.ACTION_FOR_GROUP_UPDATE
+        url = self.base_url + Consts.ACTION_FOR_PROXY_UPDATE
         params = dict()
         params['id'] = proxy_id
-        params['title'] = name
-        if sort is not None:
-            params['sort'] = sort
+        if proxy_type is not None:
+            params['proxy_type'] = proxy_type
+        if proxy_ip is not None:
+            params['proxy_ip'] = proxy_ip
+        if proxy_port is not None:
+            params['proxy_port'] = proxy_port
+        if proxy_user is not None:
+            params['proxy_user'] = proxy_user
+        if proxy_password is not None:
+            params['proxy_password'] = proxy_password
+        if note is not None:
+            params['note'] = note
+        if tag is not None:
+            params['tag'] = tag
+        
         try:
             self.code = None
             Utils.show_request_log = self.show_request_log

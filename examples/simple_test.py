@@ -2,8 +2,11 @@ import sys
 import time
 sys.path.insert(0, sys.path[0]+"/../")
 from ixbrowser_local_api import IXBrowserClient
+from ixbrowser_local_api import Consts
 
 c = IXBrowserClient()
+
+c.show_request_log = True
 
 # clear profile cache by profile id list
 """
@@ -125,12 +128,12 @@ else:
 """
 
 # update profile to traffic package mode
-"""
-profile_id = 250
+""" 
+profile_id = 27
 proxy_id = 10
 country = 'us'
 city = 'Ada'
-traffic_package_gateway = 'US-US'
+traffic_package_gateway = Consts.DATA_PACKAGE_PROVIDER_A_GATEWAY_US_TRANSIT_IN_CN2
 
 data = c.update_profile_to_traffic_package_mode(profile_id, proxy_id, country, city, traffic_package_gateway)
 if data is None:
@@ -138,7 +141,7 @@ if data is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
 else:
     print(data)
-"""
+""" 
 
 # update profile groups in_batches
 """
@@ -188,37 +191,38 @@ else:
 """
 
 # create custom proxy
-"""
+""" 
 proxy_type = 'socks5'
 proxy_ip = '192.168.7.92'
 proxy_port = '20001'
 proxy_user = 'test'
 proxy_password = 'test'
 note = 'teset'
-data = c.create_proxy(proxy_type, proxy_ip, proxy_port, proxy_user, proxy_password, note)
+tag = ['test', 'test1']
+data = c.create_proxy(proxy_type, proxy_ip, proxy_port, proxy_user, proxy_password, note, tag)
 if data is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
 else:
     print(data)
-"""
+""" 
 
 # update custom proxy
-"""
-proxy_id = 757041
+""" 
+proxy_id = 21350836
 proxy_type = 'http'
 proxy_ip = '192.168.7.93'
 proxy_port = '20002'
 proxy_user = 'test1'
 proxy_password = 'test1'
 note = 'teset1'
-data = c.create_proxy(proxy_type, proxy_ip, proxy_port, proxy_user, proxy_password, note)
+data = c.update_proxy(proxy_id, proxy_type, proxy_ip, proxy_port, proxy_user, proxy_password, note)
 if data is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
 else:
     print(data)
-"""
+""" 
 
 # delete proxy
 """
@@ -230,7 +234,6 @@ if data is None:
 else:
     print(data)
 """
-
 
 # get opened profile list
 """ 

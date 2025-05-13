@@ -15,6 +15,8 @@ p.site_url = 'https://www.ixbrowser.com'
 p.name = 'Temp ' + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time.time()))
 p.tag = ['test', 'test1']
 
+p.tfa_secret = 'ONVYEGTYB3EYIE3DK7DUELRLC74OU37V'
+
 proxy = Proxy()
 
 # custom proxy
@@ -46,12 +48,15 @@ preference.block_audio = 1
 preference.block_image = 1
 preference.open_url = 'https://www.google.com'
 preference.load_profile_info_page = 0
+preference.block_password_pages = 1
+preference.show_bookmarks_bar = 1
 p.preference_config = preference
 
 fingerprint = Fingerprint()
 fingerprint.language_type = 2
 fingerprint.language = 'cn'
 fingerprint.client_rects = 0
+# fingerprint.cloudflare_challenge_bypassing = 1
 fingerprint.set_device_name('rand_' + str(int(time.time())))
 
 # fingerprint.webgpu_data_type = 1
