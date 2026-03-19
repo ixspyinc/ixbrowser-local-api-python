@@ -335,6 +335,10 @@ class Preference(object):
         # 0: Disable 1: Enable Default: 1
         self.block_restore_pages = None
 
+        # Disable notification pop-ups
+        # 0: Disable 1: Enable Default: 1
+        self.block_notification_pages = None
+
         # Disable pop-up blocking
         # 0: Disable 1: Enable Default: 1
         self.block_popup_blocking = None
@@ -350,6 +354,10 @@ class Preference(object):
         # Show bookmarks bar
         # 0: Hidden 1:Show  Default: 0
         self.show_bookmarks_bar = None
+
+        # Auto upload bookmarks
+        # 0: Disable 1: Enable Default: 0
+        self.auto_upload_bookmarks = None
 
         if preference_dict is not None and isinstance(preference_dict, dict):
             for k, v in preference_dict.items():
@@ -399,6 +407,11 @@ class Fingerprint(object):
         # When ua_type is 1, it only supports Windows/Macos, 
         # when ua_type is 2, it only supports Android/IOS
         self.platform = None
+
+        # Operating system version
+        # This parameter is only needed when platform = Windows.
+        # Optional values: 11/10 Default: 11
+        self.system_version = None
 
         # Hide debug panel, Default: 1 (valid only when ua_type is 2)
         # 1: Enable 

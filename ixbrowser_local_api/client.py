@@ -150,7 +150,7 @@ class IXBrowserClient(object):
 
     def open_profile_with_random_fingerprint(self, profile_id, load_extensions=True, load_profile_info_page=False,
                                              cookie=None, disable_extension_welcome_page=True, startup_args=[],
-                                             proxy_config: Proxy = None, fingerprint_config: Fingerprint = None):
+                                             proxy_config: Proxy = None, fingerprint_config: Fingerprint = None, preference_config: Preference = None):
         """
         open profile with random fingerprint
         :param profile_id:
@@ -161,6 +161,7 @@ class IXBrowserClient(object):
         :param startup_args:
         :param proxy_config:
         :param fingerprint_config:
+        :param preference_config:
         :return:
         """
         url = self.base_url + Consts.ACTION_FOR_PROFILE_OPEN_WITH_FINGERPRINT
@@ -189,6 +190,9 @@ class IXBrowserClient(object):
 
         if fingerprint_config is not None:
             params['fingerprint_config'] = fingerprint_config.dump_to_dict()
+
+        if preference_config is not None:
+            params['preference_config'] = preference_config.dump_to_dict()
 
         try:
             self.code = None
@@ -995,11 +999,12 @@ class IXBrowserClient(object):
         else:
             return True
 
-    def get_proxy_list(self, mode=0, tag_id=None, page=1, limit=10):
+    def get_proxy_list(self, mode=0, tag_id=None, id=None, page=1, limit=10):
         """
         get proxy list
         :param mode:  0=All / 1=Custom Proxy / 2=Purchased Proxy
         :param tag_id:
+        :param id:
         :param page:
         :param limit:
         :return:
@@ -1013,6 +1018,9 @@ class IXBrowserClient(object):
 
         if tag_id is not None:
             params['tag_id'] = tag_id
+
+        if id is not None:
+            params['id'] = id
 
         try:
             self.code = None
