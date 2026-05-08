@@ -102,7 +102,7 @@ class IXBrowserClient(object):
             return True
     
     def open_profile(self, profile_id, load_extensions=True, load_profile_info_page=False, cookies_backup=True,
-                     cookie=None, disable_extension_welcome_page=True, startup_args=[]):
+                     cookie=None, disable_extension_welcome_page=True, startup_args=None):
         """
         open profile
         :param profile_id:
@@ -149,7 +149,7 @@ class IXBrowserClient(object):
             return True
 
     def open_profile_with_random_fingerprint(self, profile_id, load_extensions=True, load_profile_info_page=False,
-                                             cookie=None, disable_extension_welcome_page=True, startup_args=[],
+                                             cookie=None, disable_extension_welcome_page=True, startup_args=None,
                                              proxy_config: Proxy = None, fingerprint_config: Fingerprint = None, preference_config: Preference = None):
         """
         open profile with random fingerprint
