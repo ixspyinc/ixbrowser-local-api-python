@@ -5,7 +5,7 @@ Official Python client for ixBrowser Local API V2.0.
 ## Language
 
 - [English](README.md)
-- [Simplified Chinese](README.zh_CN.md)
+- [简体中文](README.zh_CN.md)
 
 ## Prerequisites
 
