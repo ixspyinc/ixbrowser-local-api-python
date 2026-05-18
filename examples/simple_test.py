@@ -61,7 +61,7 @@ else:
 # get profile cookies
 """
 profile_id = 251
-data = c.get_profile_cookies(profile_id)
+data = c.get_profile_cookie(profile_id)
 if data is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
@@ -248,7 +248,7 @@ else:
 
 # arrage tile opened profile
 """ 
-data = c.arrage_tile_opened_profile()
+data = c.arrange_tile_opened_profile()
 if data is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error message=', c.message)
