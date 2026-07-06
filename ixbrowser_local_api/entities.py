@@ -324,7 +324,9 @@ class Preference(object):
         self.label_management = None
         self.open_url = None
         self.block_image = None
+        self.block_image_max_size = None
         self.block_audio = None
+        self.block_permission_requests = None
         self.load_profile_info_page = None
 
         # Disable password page popup
@@ -442,7 +444,10 @@ class Fingerprint(object):
         self.fonts_type = None
         self.fonts = None
 
+        # 1: Replace, 2: Real, 3: Disable, 4: Forward, 5: Disable UDP, Default: 1
         self.webrtc = None
+        
+        self.hardware_acceleration = None
 
         # 1: Random, 2: Customized, 3: Close
         self.webgl_data_type = None

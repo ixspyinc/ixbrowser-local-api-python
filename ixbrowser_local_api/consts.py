@@ -34,6 +34,8 @@ class Consts:
 
     ACTION_FOR_PROFILE_CLEAR_CACHE = 'profile-clear-cache'
     ACTION_FOR_PROFILE_CLEAR_CACHE_AND_COOKIES = 'profile-clear-cache-and-cookies'
+    ACTION_FOR_PROFILE_CLEAR_CACHE_KEEP_EXTENSIONS = 'profile-clear-cache-keep-extensions'
+    ACTION_FOR_PROFILE_CLEAR_CLOUD_DATA = 'profile-clear-cloud-data'
     ACTION_FOR_PROFILE_GET_COOKIES = 'profile-get-cookies'
     ACTION_FOR_PROFILE_UPDATE_COOKIES = 'profile-update-cookies'
     ACTION_FOR_PROFILE_EMPTY_RECYCLE_BIN = "empty-recycle-bin"
@@ -134,6 +136,10 @@ class Consts:
     DATA_PACKAGE_PROVIDER_B_GATEWAY_JP = 'JP'
     DATA_PACKAGE_PROVIDER_B_GATEWAY_HK_TRANSIT_IN_CN = 'CN-HK'
     DATA_PACKAGE_PROVIDER_B_GATEWAY_HK_TRANSIT_IN_CN2 = 'CN-HK2'
+
+    # Provider C
+    DATA_PACKAGE_PROVIDER_C_GATEWAY_CN_MOBILE = 'CN-Mobile'
+    DATA_PACKAGE_PROVIDER_C_GATEWAY_CN_MOBILE2 = 'CN-Mobile2'
 
     # Traffic Package Gateway
     # Old configuration, no longer available

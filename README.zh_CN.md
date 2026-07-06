@@ -35,6 +35,15 @@ pip install ixbrowser-local-api
 ```bash
 git clone https://github.com/ixspyinc/ixbrowser-local-api-python.git
 cd ixbrowser-local-api-python
+pip install .
+```
+
+*（旧版支持）如果您仍在使用废弃的 `setup.py` 安装方式，建议先安装 `setuptools`：*
+
+```bash
+git clone https://github.com/ixspyinc/ixbrowser-local-api-python.git
+cd ixbrowser-local-api-python
+pip install setuptools
 python setup.py install
 ```
 

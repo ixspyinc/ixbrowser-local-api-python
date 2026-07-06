@@ -869,6 +869,66 @@ class IXBrowserClient(object):
         else:
             return True
 
+    def clear_profile_cache_keep_extensions(self, profile_id):
+        """
+        clear profile cache (keep extensions)
+        :param profile_id: profile id or  profile id list
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_CLEAR_CACHE_KEEP_EXTENSIONS
+        params = dict()
+        if isinstance(profile_id, list):
+            params['profile_id'] = profile_id
+        else:
+            params['profile_id'] = [profile_id]
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def clear_profile_cloud_data(self, profile_id, data_type=None):
+        """
+        clear profile cloud data
+        :param profile_id: profile id or  profile id list
+        :param data_type: list or string, e.g. ["indexed_db", "local_storage", "extension_data"]
+        :return:
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_CLEAR_CLOUD_DATA
+        params = dict()
+        if isinstance(profile_id, list):
+            params['profile_id'] = profile_id
+        else:
+            params['profile_id'] = [profile_id]
+            
+        if data_type is not None:
+            if isinstance(data_type, list):
+                params['type'] = data_type
+            else:
+                params['type'] = [data_type]
+                
+        try:
+            self.code = None
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
     def get_group_list(self, page=1, limit=100):
         """
         get group list

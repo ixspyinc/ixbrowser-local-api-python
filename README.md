@@ -35,6 +35,15 @@ Install from source:
 ```bash
 git clone https://github.com/ixspyinc/ixbrowser-local-api-python.git
 cd ixbrowser-local-api-python
+pip install .
+```
+
+*(Legacy Support) If you still use the deprecated `setup.py` installation, we recommend installing `setuptools` first:*
+
+```bash
+git clone https://github.com/ixspyinc/ixbrowser-local-api-python.git
+cd ixbrowser-local-api-python
+pip install setuptools
 python setup.py install
 ```
 
