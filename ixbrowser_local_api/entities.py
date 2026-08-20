@@ -361,6 +361,14 @@ class Preference(object):
         # 0: Disable 1: Enable Default: 0
         self.auto_upload_bookmarks = None
 
+        # Passkey Manager
+        # 0: Disable 1: Enable Default: 0
+        self.passkey_manager = None
+        
+        # Passkey Simulated Identity
+        # 1: Follow OS 2: Random 3: Empty 4: IX-Passkey Default: 1
+        self.passkey_simulated_identity = None
+
         if preference_dict is not None and isinstance(preference_dict, dict):
             for k, v in preference_dict.items():
                 if hasattr(self, k):
