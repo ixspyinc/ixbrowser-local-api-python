@@ -41,6 +41,7 @@ See [error-handling.md](error-handling.md).
 | `arrange_tile_opened_profile(...)` | `profile-opened-list-arrange-tile` | Arrange opened profile windows in a tiled layout. |
 | `close_profile(profile_id)` | `profile-close` | Close one profile. |
 | `close_profile_in_batches(profile_id)` | `profile-close-in-batches` | Close multiple profiles. |
+| `reset_profile_open_state(profile_id)` | `profile-open-state-reset` | Reset the open state of a profile that is shown as opened but is actually closed. |
 | `create_profile(profile)` | `profile-create` | Create a profile from a `Profile` entity. |
 | `create_profile_by_copying(...)` | `profile-copy` | Create a profile by copying an existing profile. |
 | `update_profile(profile)` | `profile-update` | Update a profile from a `Profile` entity. |
@@ -52,6 +53,9 @@ See [error-handling.md](error-handling.md).
 | `update_profile_cookie(profile_id, cookie)` | `profile-update-cookies` | Update cookies for a profile. |
 | `clear_profile_cache(profile_id)` | `profile-clear-cache` | Clear profile cache. |
 | `clear_profile_cache_and_cookies(profile_id)` | `profile-clear-cache-and-cookies` | Clear profile cache and cookies. |
+| `clear_profile_cache_keep_extensions(profile_id)` | `profile-clear-cache-keep-extensions` | Clear profile cache but keep extensions. |
+| `clear_profile_cloud_data(profile_id, data_type)` | `profile-clear-cloud-data` | Clear selected cloud data of a profile. `data_type` accepts `Consts.CLOUD_DATA_TYPE_INDEXED_DB`, `Consts.CLOUD_DATA_TYPE_LOCAL_STORAGE` or `Consts.CLOUD_DATA_TYPE_EXTENSION_DATA`, as a string or a list. |
+| `clear_profile_saved_user_password(profile_id)` | `profile-clear-saved-user-password` | Clear the account and password saved by the browser in a profile. |
 | `close_profile_via_selenium(obj)` | N/A | Deprecated Selenium helper. Prefer `close_profile`. |
 
 ## Profile Proxy Methods

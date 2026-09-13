@@ -40,6 +40,8 @@ python examples/profile_open.py
 | `profile_copy.py` | Create a new profile by copying an existing profile. |
 | `profile_open.py` | Open a profile and attach Selenium with the returned webdriver details. |
 | `profile_open_with_random_fingerprint.py` | Open a profile with a randomized fingerprint and optional proxy override. |
+| `profile_reset_open_state.py` | Reset the open state of a profile, and clear the account and password saved in it. |
+| `profile_clear_cloud_data.py` | Clear the cloud data of one or more profiles. |
 
 ## Profile Transfer Code Examples
 

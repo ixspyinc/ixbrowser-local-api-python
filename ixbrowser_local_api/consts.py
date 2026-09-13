@@ -25,6 +25,7 @@ class Consts:
     ACTION_FOR_PROFILE_OPENED_LIST = 'profile-opened-list'
     ACTION_FOR_PROFILE_NATIVE_OPENED_LIST = 'native-client-profile-opened-list'
     ACTION_FOR_PROFILE_OPENED_LIST_ARRANGE_TILE = 'profile-opened-list-arrange-tile'
+    ACTION_FOR_PROFILE_OPEN_STATE_RESET = 'profile-open-state-reset'
 
     ACTION_FOR_PROFILE_CREATE = 'profile-create'
     ACTION_FOR_PROFILE_UPDATE = 'profile-update'
@@ -36,6 +37,7 @@ class Consts:
     ACTION_FOR_PROFILE_CLEAR_CACHE_AND_COOKIES = 'profile-clear-cache-and-cookies'
     ACTION_FOR_PROFILE_CLEAR_CACHE_KEEP_EXTENSIONS = 'profile-clear-cache-keep-extensions'
     ACTION_FOR_PROFILE_CLEAR_CLOUD_DATA = 'profile-clear-cloud-data'
+    ACTION_FOR_PROFILE_CLEAR_SAVED_USER_PASSWORD = 'profile-clear-saved-user-password'
     ACTION_FOR_PROFILE_GET_COOKIES = 'profile-get-cookies'
     ACTION_FOR_PROFILE_UPDATE_COOKIES = 'profile-update-cookies'
     ACTION_FOR_PROFILE_EMPTY_RECYCLE_BIN = "empty-recycle-bin"
@@ -188,4 +190,14 @@ class Consts:
     PASSKEY_SIMULATED_IDENTITY_RANDOM = 2
     PASSKEY_SIMULATED_IDENTITY_EMPTY = 3
     PASSKEY_SIMULATED_IDENTITY_IX_PASSKEY = 4
+
+    # Cloud Data Type
+    # Optional values of the 'type' parameter of clear_profile_cloud_data
+    CLOUD_DATA_TYPE_INDEXED_DB = 'indexed_db'
+    CLOUD_DATA_TYPE_LOCAL_STORAGE = 'local_storage'
+    CLOUD_DATA_TYPE_EXTENSION_DATA = 'extension_data'
+
+    CLOUD_DATA_TYPE_LIST = [CLOUD_DATA_TYPE_INDEXED_DB,
+                            CLOUD_DATA_TYPE_LOCAL_STORAGE,
+                            CLOUD_DATA_TYPE_EXTENSION_DATA]
 

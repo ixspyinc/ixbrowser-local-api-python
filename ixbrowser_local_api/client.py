@@ -1,5 +1,5 @@
 import json
-from .errors import UnexpectedError, HttpError, ResponseError, BaseError
+from .errors import UnexpectedError, HttpError, ResponseError, BaseError, UNEXPECTED_ERROR_CODE
 from .utils import Utils
 from .consts import Consts
 from .entities import Profile, Proxy, Preference, Fingerprint
@@ -342,6 +342,34 @@ class IXBrowserClient(object):
             Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def reset_profile_open_state(self, profile_id):
+        """
+        reset profile open state
+        Use it when the profile is still shown as opened but it is actually closed.
+
+        The interface returns null data on success, so True is returned instead of
+        the response data, otherwise success cannot be told apart from failure.
+        :param profile_id: profile id
+        :return: True
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_OPEN_STATE_RESET
+        params = dict()
+        params['profile_id'] = profile_id
+
+        try:
+            self._reset_request_state()
+            Utils.show_request_log = self.show_request_log
+            Utils.get_api_response(url, params)
+            return True
         except BaseError as e:
             self.code = e.code
             self.message = e.message
@@ -942,12 +970,16 @@ class IXBrowserClient(object):
         else:
             return True
 
-    def clear_profile_cloud_data(self, profile_id, data_type=None):
+    def clear_profile_cloud_data(self, profile_id, data_type):
         """
         clear profile cloud data
-        :param profile_id: profile id or  profile id list
-        :param data_type: list or string, e.g. ["indexed_db", "local_storage", "extension_data"]
-        :return:
+        :param profile_id: profile id or profile id list
+        :param data_type: string or list, optional values are defined in
+                          Consts.CLOUD_DATA_TYPE_LIST, that is:
+                          Consts.CLOUD_DATA_TYPE_INDEXED_DB = 'indexed_db'
+                          Consts.CLOUD_DATA_TYPE_LOCAL_STORAGE = 'local_storage'
+                          Consts.CLOUD_DATA_TYPE_EXTENSION_DATA = 'extension_data'
+        :return: cleared profile id list
         """
         url = self.base_url + Consts.ACTION_FOR_PROFILE_CLEAR_CLOUD_DATA
         params = dict()
@@ -955,18 +987,53 @@ class IXBrowserClient(object):
             params['profile_id'] = profile_id
         else:
             params['profile_id'] = [profile_id]
-            
-        if data_type is not None:
-            if isinstance(data_type, list):
-                params['type'] = data_type
-            else:
-                params['type'] = [data_type]
-                
+
+        if data_type is None:
+            type_list = []
+        elif isinstance(data_type, list):
+            type_list = data_type
+        else:
+            type_list = [data_type]
+
+        invalid_type_list = [i for i in type_list if i not in Consts.CLOUD_DATA_TYPE_LIST]
+        if len(invalid_type_list) > 0:
+            self._reset_request_state()
+            self.code = UNEXPECTED_ERROR_CODE
+            self.message = "The data_type is not supported: {}. The optional values are: {}.".format(
+                invalid_type_list, Consts.CLOUD_DATA_TYPE_LIST)
+            return None
+
+        params['type'] = type_list
+
         try:
             self._reset_request_state()
             Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
+    def clear_profile_saved_user_password(self, profile_id):
+        """
+        clear the saved account and password of the profile
+        :param profile_id: profile id
+        :return: True
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_CLEAR_SAVED_USER_PASSWORD
+        params = dict()
+        params['profile_id'] = profile_id
+
+        try:
+            self._reset_request_state()
+            Utils.show_request_log = self.show_request_log
+            Utils.get_api_response(url, params)
+            return True
         except BaseError as e:
             self.code = e.code
             self.message = e.message
