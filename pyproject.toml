@@ -1,0 +1,20 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "online: needs the public Local API documentation site; skipped unless IXBROWSER_DOC_CONTRACT=1",
+]
+
+[tool.ruff]
+line-length = 140
+target-version = "py38"
+# examples/ is run as loose scripts, so the sys.path bootstrap before its imports
+# is intentional there.
+exclude = [".git", "build", "dist", ".pytest-libs", ".ruff-bin", ".piptmp", "examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+# E501: long lines are common in the generated-looking docstrings of the client.
+# W291/W293: trailing and blank-line whitespace exist throughout the current
+#           sources; normalising them is a separate whitespace-only change.
+ignore = ["E501", "W291", "W293"]

@@ -1,7 +1,7 @@
 import pathlib
 import runpy
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 HERE = pathlib.Path(__file__).parent.resolve()
 LONG_DESCRIPTION = (HERE / "README.md").read_text(encoding="utf8")
@@ -21,7 +21,9 @@ setup(name='ixbrowser-local-api',
       url='https://github.com/ixspyinc/ixbrowser-local-api-python',
       license='MIT',
       keywords='',
-      packages=find_packages(),
+      # Only the SDK is shipped. find_packages() would also pick up the top level
+      # tests package and install it into the user environment.
+      packages=['ixbrowser_local_api'],
       install_requires=['requests >= 2'],
       classifiers=["Programming Language :: Python :: 3.5",
                    "Programming Language :: Python :: 3.6",

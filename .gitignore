@@ -5,3 +5,10 @@
 /dist/
 /readme.txt
 *__pycache__*
+
+# Test, lint and packaging scratch directories
+/.pytest_cache/
+/.pytest-libs/
+/.piptmp/
+/.ruff_cache/
+*.egg-info/

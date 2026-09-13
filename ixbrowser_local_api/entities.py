@@ -84,7 +84,11 @@ class Profile(object):
         for k, v in self.__dict__.items():
             if v is not None:
                 if k == 'proxy_config' or k == 'preference_config' or k == 'fingerprint_config':
-                    d[k] = v.dump_to_dict()
+                    nested = v.dump_to_dict()
+                    # An entity whose fields are all unset must be omitted, like a
+                    # None field, instead of being sent as an empty object.
+                    if len(nested) > 0:
+                        d[k] = nested
                 else:
                     d[k] = v
         return d

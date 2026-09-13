@@ -45,9 +45,9 @@ The SDK defines these error classes in `ixbrowser_local_api/errors.py`:
 
 | Error class | When it is used | `code` |
 | --- | --- | --- |
-| `UnexpectedError` | Request exceptions, malformed responses, or unexpected response data. | `1` |
+| `UnexpectedError` | Request exceptions, malformed responses, an unsupported method argument, or unexpected response data. | `1` |
 | `HttpError` | The HTTP status code is not `200`. | The HTTP status code. |
-| `ResponseError` | The Local API response contains a non-zero error code. | The API error code. |
+| `ResponseError` | The Local API response contains a non-zero error code. | The API error code. `message` is `None` when the response carries only a code. |
 
 ## HTTP and API Response Flow
 

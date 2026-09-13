@@ -49,8 +49,49 @@ class Utils(object):
         if type(error['code']) is not int:
             raise UnexpectedError("The returned 'error.code' must be an integer")
         if error['code'] != Consts.RESULT_CODE_FOR_SUCCESS:
-            if 'message' not in error:
-                raise UnexpectedError("The returned data does not contain the 'error.message' key")
+            # The published docs contain error samples that carry only a code,
+            # so a missing message must not be treated as a malformed response.
+            # ResponseError keeps the message at None in that case.
             raise ResponseError(error)
         return result['data'] if 'data' in result else True
+
+    @staticmethod
+    def get_paginated_data(result):
+        """
+        Unwrap the result of a paginated api response.
+
+        Paginated interfaces return an object holding both the item list and the
+        total item count, for example:
+            {"error": {"code": 0}, "data": {"total": 214, "data": [...]}}
+
+        The shape and the value types are validated here so that a malformed
+        response raises a catchable UnexpectedError. Without the type checks a
+        response such as {"total": "invalid", "data": null} would be reported as
+        a success returning None, which is indistinguishable from the documented
+        failure signal.
+        :param result: value returned by get_api_response
+        :return: (total, item list), a null item list is normalised to []
+        """
+        if not isinstance(result, dict):
+            raise UnexpectedError(
+                "The paginated response 'data' must be a JSON object, got: {}".format(type(result).__name__))
+        if 'total' not in result:
+            raise UnexpectedError("The paginated response 'data' does not contain the 'total' key")
+        if 'data' not in result:
+            raise UnexpectedError("The paginated response 'data' does not contain the 'data' key")
+
+        total = result['total']
+        if not isinstance(total, int) or isinstance(total, bool):
+            raise UnexpectedError(
+                "The paginated response 'total' must be an integer, got: {!r}".format(total))
+
+        data = result['data']
+        if data is None:
+            # Tolerated: an empty page whose list was serialised as null.
+            data = []
+        if not isinstance(data, list):
+            raise UnexpectedError(
+                "The paginated response 'data' must be a JSON array, got: {}".format(type(data).__name__))
+
+        return total, data
 

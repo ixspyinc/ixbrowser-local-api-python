@@ -1,5 +1,5 @@
 import json
-from .errors import UnexpectedError, HttpError, ResponseError, BaseError, UNEXPECTED_ERROR_CODE
+from .errors import BaseError, UNEXPECTED_ERROR_CODE
 from .utils import Utils
 from .consts import Consts
 from .entities import Profile, Proxy, Preference, Fingerprint
@@ -55,8 +55,8 @@ class IXBrowserClient(object):
             self._reset_request_state()
             Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
-            self.total = result['total']
-            return result['data']
+            self.total, data = Utils.get_paginated_data(result)
+            return data
         except BaseError as e:
             self.code = e.code
             self.message = e.message
@@ -321,7 +321,7 @@ class IXBrowserClient(object):
             try:
                 # selenium 4
                 obj.switch_to.window(handle)
-            except:
+            except Exception:
                 # selenium 3
                 obj.switch_to_window(handle)
             obj.close()
@@ -755,8 +755,8 @@ class IXBrowserClient(object):
             self._reset_request_state()
             Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
-            self.total = result['total']
-            return result['data']
+            self.total, data = Utils.get_paginated_data(result)
+            return data
         except BaseError as e:
             self.code = e.code
             self.message = e.message
@@ -997,6 +997,8 @@ class IXBrowserClient(object):
 
         invalid_type_list = [i for i in type_list if i not in Consts.CLOUD_DATA_TYPE_LIST]
         if len(invalid_type_list) > 0:
+            # Fail locally instead of sending a request the Local API rejects.
+            # The code matches what an UnexpectedError would carry.
             self._reset_request_state()
             self.code = UNEXPECTED_ERROR_CODE
             self.message = "The data_type is not supported: {}. The optional values are: {}.".format(
@@ -1059,8 +1061,8 @@ class IXBrowserClient(object):
             self._reset_request_state()
             Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
-            self.total = result['total']
-            return result['data']
+            self.total, data = Utils.get_paginated_data(result)
+            return data
         except BaseError as e:
             self.code = e.code
             self.message = e.message
@@ -1162,8 +1164,8 @@ class IXBrowserClient(object):
             self._reset_request_state()
             Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
-            self.total = result['total']
-            return result['data']
+            self.total, data = Utils.get_paginated_data(result)
+            return data
         except BaseError as e:
             self.code = e.code
             self.message = e.message
@@ -1200,8 +1202,8 @@ class IXBrowserClient(object):
             self._reset_request_state()
             Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
-            self.total = result['total']
-            return result['data']
+            self.total, data = Utils.get_paginated_data(result)
+            return data
         except BaseError as e:
             self.code = e.code
             self.message = e.message
@@ -1230,8 +1232,8 @@ class IXBrowserClient(object):
             self._reset_request_state()
             Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
-            self.total = result['total']
-            return result['data']
+            self.total, data = Utils.get_paginated_data(result)
+            return data
         except BaseError as e:
             self.code = e.code
             self.message = e.message
@@ -1436,8 +1438,8 @@ class IXBrowserClient(object):
             self._reset_request_state()
             Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
-            self.total = result['total']
-            return result['data']
+            self.total, data = Utils.get_paginated_data(result)
+            return data
         except BaseError as e:
             self.code = e.code
             self.message = e.message
