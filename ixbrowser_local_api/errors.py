@@ -30,5 +30,8 @@ class HttpError(BaseError):
 class ResponseError(BaseError):
     def __init__(self, error_dict):
         self.code = error_dict['code']
-        self.message = error_dict['message']
+        if 'message' in error_dict:
+            self.message = error_dict['message']
+        else:
+            self.message = None
 

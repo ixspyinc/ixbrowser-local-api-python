@@ -548,6 +548,48 @@ class IXBrowserClient(object):
         else:
             return True
 
+    def update_profile_to_api_extraction_proxy_mode(self, profile_id, 
+                                                    proxy_url, 
+                                                    format_type=Consts.PROXY_DATA_FROMAT_TYPE_TXT,
+                                                    proxy_type=Consts.PROXY_TYPE_SOCKS5, 
+                                                    extract_method = Consts.PROXY_EXTRACT_FROM_URL_FRESH_TYPE_WHEN_INVALID,
+                                                    txt_mapping = None,
+                                                    json_mapping = None,
+                                                    proxy_check_line=Consts.DEFAULT_PROXY_CHECK_LINE):
+        """
+        update profile to api-extraction proxy mode
+        :param profile_id:
+        :param proxy_url:
+        :param format_type:
+        :param proxy_type:
+        :param extract_method:
+        :param txt_mapping:
+        :param json_mapping:
+        :param proxy_check_line
+        :return: string
+        """
+        url = self.base_url + Consts.ACTION_FOR_PROFILE_UPDATE_PROXY_TO_API_EXTRACTION_MODE
+        params = dict()
+        params['profile_id'] = profile_id
+
+        p = Proxy()
+        p.change_to_url_extraction_mode(proxy_url, format_type, proxy_type, extract_method, txt_mapping, json_mapping, proxy_check_line)
+        params['proxy_info'] = p.dump_url_extraction_mode_info_to_dict()
+
+        try:
+            self._reset_request_state()
+            Utils.show_request_log = self.show_request_log
+            result = Utils.get_api_response(url, params)
+            return result
+        except BaseError as e:
+            self.code = e.code
+            self.message = e.message
+
+        if self.code is not None:
+            return None
+        else:
+            return True
+
     def random_profile_fingerprint(self, profile_id):
         """
         random profile fingerprint

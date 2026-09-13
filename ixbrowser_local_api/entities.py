@@ -288,6 +288,27 @@ class Proxy(object):
             self.proxy_check_line = proxy_check_line
 
         return True
+
+    def dump_url_extraction_mode_info_to_dict(self):
+        if self.proxy_mode == Consts.PROXY_MODE_EXTRACT_FROM_URL:
+            d = dict()
+            d['proxy_mode'] = self.proxy_mode
+            d['proxy_check_line'] = self.proxy_check_line
+            d['proxy_type'] = self.proxy_type
+            d['proxy_service'] = self.proxy_service
+            d['proxy_data_format_type'] = self.proxy_data_format_type
+            if self.proxy_data_format_type == Consts.PROXY_DATA_FROMAT_TYPE_TXT:
+                d['proxy_data_txt_format'] = self.proxy_data_txt_format
+                d['proxy_data_json_format'] = None
+            else:
+                d['proxy_data_json_format'] = self.proxy_data_json_format
+                d['proxy_data_txt_format'] = None
+
+            d['proxy_extraction_method'] = self.proxy_extraction_method
+            d['proxy_url'] = self.proxy_url
+            return d
+        else:
+            raise UnexpectedError("The proxy mode is {}, and the expected value is {}.".format(self.proxy_mode, Consts.PROXY_MODE_EXTRACT_FROM_URL))
     
     def get_url_extraction_mode_json_mapping(self, ip_key='ip', port_key='port', username_key=None, password_key=None):
         """
