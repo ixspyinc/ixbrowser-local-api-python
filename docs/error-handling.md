@@ -31,9 +31,13 @@ The error state is reset before each request:
 
 ```python
 self.code = None
+self.message = None
+self.total = None
 ```
 
 After a failed request, `client.code` and `client.message` are populated.
+`client.total` describes only the latest successful paginated request; it is
+cleared before other requests as well as failed requests.
 
 ## Error Types
 

@@ -20,36 +20,37 @@ class Utils(object):
         :param params:
         :return:
         """
-        r = None
-        error_msg = None
         if Utils.show_request_log:
             print('[debug info]request url=', url)
             print('[debug info]request params=', params)
         try:
             r = requests.post(url, json=params, timeout=20)
         except Exception as e:
-            error_msg = 'exception desc:' + str(e)
+            raise UnexpectedError('exception desc:' + str(e)) from e
 
-        if error_msg is None:
-            if r.status_code == Consts.HTTP_CODE_FOR_SUCCESS:
-                if Utils.show_request_log:
-                    print('[debug info]response string=', r.text)
-                result = r.json()
-                if 'error' in result:
-                    if 'code' in result['error']:
-                        if result['error']['code'] == Consts.RESULT_CODE_FOR_SUCCESS:
-                            if 'data' in result:
-                                return result['data']
-                            else:
-                                return True
-                        else:
-                            raise ResponseError(result['error'])
-                    else:
-                        raise UnexpectedError("The returned data does not contain the 'error.code' key")
-                else:
-                    raise UnexpectedError("The returned data does not contain the 'error' key")
-            else:
-                raise HttpError(r.status_code)
-        else:
-            raise UnexpectedError(error_msg)
+        if r.status_code != Consts.HTTP_CODE_FOR_SUCCESS:
+            raise HttpError(r.status_code)
+        if Utils.show_request_log:
+            print('[debug info]response string=', r.text)
+        try:
+            result = r.json()
+        except ValueError as e:
+            raise UnexpectedError('The returned data is not valid JSON') from e
+
+        if not isinstance(result, dict):
+            raise UnexpectedError('The returned data must be a JSON object')
+        if 'error' not in result:
+            raise UnexpectedError("The returned data does not contain the 'error' key")
+        error = result['error']
+        if not isinstance(error, dict):
+            raise UnexpectedError("The returned 'error' must be a JSON object")
+        if 'code' not in error:
+            raise UnexpectedError("The returned data does not contain the 'error.code' key")
+        if type(error['code']) is not int:
+            raise UnexpectedError("The returned 'error.code' must be an integer")
+        if error['code'] != Consts.RESULT_CODE_FOR_SUCCESS:
+            if 'message' not in error:
+                raise UnexpectedError("The returned data does not contain the 'error.message' key")
+            raise ResponseError(error)
+        return result['data'] if 'data' in result else True
 

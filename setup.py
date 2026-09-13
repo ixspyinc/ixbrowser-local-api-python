@@ -1,5 +1,5 @@
 import pathlib
-from ixbrowser_local_api import version
+import runpy
 
 from setuptools import setup, find_packages
 
@@ -7,7 +7,9 @@ HERE = pathlib.Path(__file__).parent.resolve()
 LONG_DESCRIPTION = (HERE / "README.md").read_text(encoding="utf8")
 LONG_DESC_TYPE = "text/markdown"
 
-CURR_VERSION = '.'.join(str(x) for x in version.VERSION)
+# Load version metadata without importing the package and its dependencies.
+VERSION_INFO = runpy.run_path(str(HERE / 'ixbrowser_local_api' / 'version.py'))
+CURR_VERSION = '.'.join(str(x) for x in VERSION_INFO['VERSION'])
 
 setup(name='ixbrowser-local-api',
       version=CURR_VERSION,

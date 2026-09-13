@@ -4,5 +4,4 @@
 /build/
 /dist/
 /readme.txt
-__pycache__/*
-/ixbrowser_local_api/__pycache__/*
+*__pycache__*
