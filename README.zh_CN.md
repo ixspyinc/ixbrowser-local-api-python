@@ -12,7 +12,7 @@ ixBrowser 本地 API V2.0 的官方 Python SDK。
 - 已安装并运行 ixBrowser 桌面客户端。
 - 已在 ixBrowser 桌面客户端中启用本地 API 服务。
 - 默认连接地址为 `http://127.0.0.1:53200/api/v2/`。
-- Python 版本需为 3.5 或更高版本。
+- Python 版本需为 3.8 或更高版本（CI 覆盖 Python 3.8–3.14）。
 
 如果你的本地 API 使用了不同的主机或端口，可以在初始化客户端时传入：
 

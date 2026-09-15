@@ -16,6 +16,13 @@ c = IXBrowserClient()
 
 The default base URL is `http://127.0.0.1:53200/api/v2/`.
 
+Read the SDK version with `from ixbrowser_local_api import __version__, VERSION`.
+`__version__` preserves the full release string; `VERSION` contains the numeric
+release components. Release builds freeze the validated `TAG` version into both
+wheel and sdist artifacts. Runtime `TAG` variables do not override the version.
+An unversioned source checkout uses installed package metadata when available,
+otherwise `0.0.0`.
+
 Use a custom target or port when needed:
 
 ```python
@@ -63,8 +70,9 @@ See [error-handling.md](error-handling.md).
 | Method | Local API action | Purpose |
 | --- | --- | --- |
 | `update_profile_to_traffic_package_mode(...)` | `profile-update-proxy-for-purchased-traffic-package` | Switch a profile to traffic package proxy mode. |
-| `update_profile_to_purchased_proxy_mode(profile_id, proxy_id)` | `profile-update-proxy-for-purchased-proxy` | Switch a profile to purchased proxy mode. |
+| `update_profile_to_purchased_proxy_mode(profile_id, proxy_id)` | `profile-update-proxy-to-purchased-mode` | Switch a profile to purchased proxy mode. |
 | `update_profile_to_custom_proxy_mode(...)` | `profile-update-proxy-for-custom-proxy` | Switch a profile to custom proxy mode. |
+| `update_profile_to_api_extraction_proxy_mode(...)` | `profile-update-proxy-for-api-extraction` | Switch a profile to API extraction proxy mode. |
 
 ## Transfer Code Methods
 

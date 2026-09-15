@@ -9,7 +9,7 @@ Official Python client for ixBrowser Local API V2.0.
 
 ## Prerequisites
 
-- Python 3.5 or later.
+- Python 3.8 or later (CI covers Python 3.8–3.14).
 - The ixBrowser desktop client is installed and running.
 - The ixBrowser Local API service is enabled in the desktop client.
 - By default, this SDK connects to `http://127.0.0.1:53200/api/v2/`.

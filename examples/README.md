@@ -24,6 +24,12 @@ Run an example from the repository root:
 python examples/profile_open.py
 ```
 
+Some examples enable `ixbrowser_local_api` DEBUG logging through Python's
+standard `logging` configuration. These logs are not redacted and may contain
+passwords, cookies or proxy credentials. Remove the DEBUG configuration when
+running outside a trusted debugging environment. See
+[the logging guide](../docs/error-handling.md#debug-request-logs).
+
 ## General Examples
 
 | File | Purpose |

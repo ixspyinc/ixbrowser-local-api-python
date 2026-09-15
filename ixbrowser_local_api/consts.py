@@ -102,8 +102,11 @@ class Consts:
     DEFAULT_PROXY_CHECK_LINE = PROXY_CHECK_LINE_GLOBAL
 
     # Proxy Data Format Type
-    PROXY_DATA_FROMAT_TYPE_TXT = 'txt'
-    PROXY_DATA_FROMAT_TYPE_JSON = 'json'
+    PROXY_DATA_FORMAT_TYPE_TXT = 'txt'
+    PROXY_DATA_FORMAT_TYPE_JSON = 'json'
+    # Backward-compatible aliases for the historical spelling.
+    PROXY_DATA_FROMAT_TYPE_TXT = PROXY_DATA_FORMAT_TYPE_TXT
+    PROXY_DATA_FROMAT_TYPE_JSON = PROXY_DATA_FORMAT_TYPE_JSON
 
     # Proxy Data TXT Format
     PROXY_DATA_TXT_FORMAT_LIST = ["ip:port", "ip:port:username:password", "username:password@ip:port", "ip:port@username:password", "username:password:ip:port"]

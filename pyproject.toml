@@ -18,3 +18,7 @@ select = ["E", "F", "W"]
 # W291/W293: trailing and blank-line whitespace exist throughout the current
 #           sources; normalising them is a separate whitespace-only change.
 ignore = ["E501", "W291", "W293"]
+
+[build-system]
+requires = ["setuptools>=40.8", "wheel", "packaging>=20"]
+build-backend = "setuptools.build_meta"

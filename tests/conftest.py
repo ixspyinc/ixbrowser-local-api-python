@@ -8,7 +8,7 @@ import json
 
 import pytest
 
-from ixbrowser_local_api import IXBrowserClient, Utils
+from ixbrowser_local_api import IXBrowserClient
 
 
 class FakeResponse(object):
@@ -76,16 +76,10 @@ def paginated_payload(items, total=None):
 
 @pytest.fixture
 def transport(monkeypatch):
-    """Replace requests.post with a fake transport for the duration of a test.
-
-    Also pins Utils.show_request_log, which is process wide mutable state, so a
-    client that enables request logging cannot leak it into another test.
-    """
+    """Replace requests.post with a fake transport for the duration of a test."""
     fake = FakeTransport()
     monkeypatch.setattr('ixbrowser_local_api.utils.requests.post', fake)
-    Utils.show_request_log = False
     yield fake
-    Utils.show_request_log = False
 
 
 @pytest.fixture

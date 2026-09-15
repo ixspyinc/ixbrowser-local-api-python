@@ -1,3 +1,5 @@
+import logging
+
 import sys
 import time
 sys.path.insert(0, sys.path[0]+"/../")
@@ -6,7 +8,8 @@ from ixbrowser_local_api import Consts
 
 c = IXBrowserClient()
 
-c.show_request_log = True
+logging.basicConfig(level=logging.WARNING)
+logging.getLogger('ixbrowser_local_api').setLevel(logging.DEBUG)
 
 # clear profile cache by profile id list
 """

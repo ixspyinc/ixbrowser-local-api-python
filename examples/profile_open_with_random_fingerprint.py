@@ -1,3 +1,5 @@
+import logging
+
 import sys
 import time
 import random
@@ -21,7 +23,8 @@ https://github.com/ixspyinc/ixbrowser-local-api-python
 """
 
 c = IXBrowserClient()
-c.show_request_log = True
+logging.basicConfig(level=logging.WARNING)
+logging.getLogger('ixbrowser_local_api').setLevel(logging.DEBUG)
 
 # Make sure the profile has been created
 profile_id = 1

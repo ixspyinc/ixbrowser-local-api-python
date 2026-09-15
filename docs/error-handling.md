@@ -91,12 +91,24 @@ if not profiles:
 
 ## Debug Request Logs
 
-Set `show_request_log` to print request and response debug information:
+Use Python's standard logging configuration to enable HTTP debug logs:
 
 ```python
-c = IXBrowserClient()
-c.show_request_log = True
+import logging
+
+logging.basicConfig(level=logging.WARNING)
+logging.getLogger("ixbrowser_local_api").setLevel(logging.DEBUG)
 ```
 
-This is useful when comparing SDK calls with the official Local API
-documentation.
+The SDK emits DEBUG records through `ixbrowser_local_api.http` for request URLs,
+parameters and successful HTTP response bodies. It does not configure log levels,
+output destinations or formatting, and does not print logs to stdout. With no
+application logging configuration, request logs are silent. Existing applications
+can route these records through their own handlers instead of using `basicConfig`.
+
+Migration: `Utils.show_request_log` and `IXBrowserClient.show_request_log` have
+been removed. Replace assignments to those attributes with logging configuration;
+assigning them no longer enables request logs.
+
+Warning: logs are not redacted. DEBUG output may contain passwords, cookies,
+proxy credentials and transfer codes. Enable it only in a trusted environment.

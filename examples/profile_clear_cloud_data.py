@@ -1,3 +1,5 @@
+import logging
+
 import sys
 import time
 sys.path.insert(0, sys.path[0]+"/../")
@@ -20,7 +22,8 @@ https://github.com/ixspyinc/ixbrowser-local-api-python
 """
 
 c = IXBrowserClient()
-c.show_request_log = True
+logging.basicConfig(level=logging.WARNING)
+logging.getLogger('ixbrowser_local_api').setLevel(logging.DEBUG)
 
 # One profile id or a list of profile ids
 profile_id = [1456, 1457]

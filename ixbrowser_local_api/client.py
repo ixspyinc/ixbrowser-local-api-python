@@ -17,8 +17,6 @@ class IXBrowserClient(object):
         self.code = None
         self.message = None
 
-        self.show_request_log = False
-
     def _reset_request_state(self):
         self.code = None
         self.message = None
@@ -53,7 +51,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             self.total, data = Utils.get_paginated_data(result)
             return data
@@ -75,7 +72,6 @@ class IXBrowserClient(object):
         params = dict()
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             return Utils.get_api_response(url, params)
         except BaseError as e:
             self.code = e.code
@@ -95,7 +91,6 @@ class IXBrowserClient(object):
         params = dict()
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             return Utils.get_api_response(url, params)
         except BaseError as e:
             self.code = e.code
@@ -142,7 +137,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -201,7 +195,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -269,7 +262,6 @@ class IXBrowserClient(object):
             params['per_line_number_of_profiles'] = per_line_number_of_profiles
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             Utils.get_api_response(url, params)
             return True
         except BaseError as e:
@@ -294,7 +286,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -339,7 +330,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -367,7 +357,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             Utils.get_api_response(url, params)
             return True
         except BaseError as e:
@@ -390,7 +379,6 @@ class IXBrowserClient(object):
         params = profile.dump_to_dict()
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -430,7 +418,6 @@ class IXBrowserClient(object):
             params['site_url'] = site_url
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -452,7 +439,6 @@ class IXBrowserClient(object):
         params = profile.dump_to_dict()
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -493,7 +479,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -520,7 +505,6 @@ class IXBrowserClient(object):
         params['proxy_info']['proxy_id'] = proxy_id
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -564,7 +548,6 @@ class IXBrowserClient(object):
             params['proxy_info']['proxy_check_line'] = Consts.DEFAULT_PROXY_CHECK_LINE
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -606,7 +589,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -629,7 +611,6 @@ class IXBrowserClient(object):
         params['profile_id'] = profile_id
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -668,7 +649,6 @@ class IXBrowserClient(object):
                         params['transfer_proxy_mode'] = Consts.TRANSFER_PROXY_MODE_SHARING
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             if 'transfer_code' in result:
                 return result['transfer_code']
@@ -694,7 +674,6 @@ class IXBrowserClient(object):
         params['profile_id'] = profile_id
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -720,7 +699,6 @@ class IXBrowserClient(object):
             params['proxy_config'] = proxy_config.dump_to_dict()
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -753,7 +731,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             self.total, data = Utils.get_paginated_data(result)
             return data
@@ -782,7 +759,6 @@ class IXBrowserClient(object):
             params['profile_id'] = [profile_id]
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -805,7 +781,6 @@ class IXBrowserClient(object):
         params['profile_id'] = profile_id
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -826,7 +801,6 @@ class IXBrowserClient(object):
         params = dict()
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -849,7 +823,6 @@ class IXBrowserClient(object):
         params['profile_id'] = profile_id
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -880,7 +853,6 @@ class IXBrowserClient(object):
                 params['cookie'] = json.dumps(cookie)
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -906,7 +878,6 @@ class IXBrowserClient(object):
             params['profile_id'] = [profile_id]
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -932,7 +903,6 @@ class IXBrowserClient(object):
             params['profile_id'] = [profile_id]
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -958,7 +928,6 @@ class IXBrowserClient(object):
             params['profile_id'] = [profile_id]
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1009,7 +978,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1033,7 +1001,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             Utils.get_api_response(url, params)
             return True
         except BaseError as e:
@@ -1059,7 +1026,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             self.total, data = Utils.get_paginated_data(result)
             return data
@@ -1088,7 +1054,6 @@ class IXBrowserClient(object):
             params['sort'] = sort
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1116,7 +1081,6 @@ class IXBrowserClient(object):
             params['sort'] = sort
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1139,7 +1103,6 @@ class IXBrowserClient(object):
         params['id'] = group_id
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1162,7 +1125,6 @@ class IXBrowserClient(object):
         params['limit'] = 100
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             self.total, data = Utils.get_paginated_data(result)
             return data
@@ -1200,7 +1162,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             self.total, data = Utils.get_paginated_data(result)
             return data
@@ -1230,7 +1191,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             self.total, data = Utils.get_paginated_data(result)
             return data
@@ -1254,7 +1214,6 @@ class IXBrowserClient(object):
         params['title'] = name
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1279,7 +1238,6 @@ class IXBrowserClient(object):
         params['title'] = name
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1302,7 +1260,6 @@ class IXBrowserClient(object):
         params['id'] = id
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1342,7 +1299,6 @@ class IXBrowserClient(object):
             params['tag'] = tag
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1387,7 +1343,6 @@ class IXBrowserClient(object):
         
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1410,7 +1365,6 @@ class IXBrowserClient(object):
         params['id'] = proxy_id
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1436,7 +1390,6 @@ class IXBrowserClient(object):
 
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             self.total, data = Utils.get_paginated_data(result)
             return data
@@ -1460,7 +1413,6 @@ class IXBrowserClient(object):
         params['title'] = name
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1488,7 +1440,6 @@ class IXBrowserClient(object):
             params['sort'] = sort
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1511,7 +1462,6 @@ class IXBrowserClient(object):
         params['id'] = tag_id
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             result = Utils.get_api_response(url, params)
             return result
         except BaseError as e:
@@ -1532,7 +1482,6 @@ class IXBrowserClient(object):
         params = dict()
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             return Utils.get_api_response(url, params)
         except BaseError as e:
             self.code = e.code
@@ -1554,7 +1503,6 @@ class IXBrowserClient(object):
         params['id'] = gateway_id
         try:
             self._reset_request_state()
-            Utils.show_request_log = self.show_request_log
             Utils.get_api_response(url, params)
             return True
         except BaseError as e:

@@ -1,4 +1,7 @@
 pytest>=7.0
+setuptools>=40.8
+wheel
+packaging>=20
 
 # tests/test_official_doc_contract.py reaches the public Local API documentation.
 # It is skipped by a default run: set IXBROWSER_DOC_CONTRACT=1 to enable it.

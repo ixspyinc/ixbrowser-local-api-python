@@ -33,9 +33,14 @@ Common fields include:
 | `password` | Saved account password. |
 | `tfa_secret` | 2FA secret. |
 | `cookie` | Cookie data. |
-| `proxy_config` | A `Proxy` object. |
-| `preference_config` | A `Preference` object. |
-| `fingerprint_config` | A `Fingerprint` object. |
+| `proxy_config` | A `Proxy` object or dictionary. |
+| `preference_config` | A `Preference` object or dictionary. |
+| `fingerprint_config` | A `Fingerprint` object or dictionary. |
+
+Directly assigned configuration dictionaries are serialized as-is. Empty
+dictionaries and empty entities are omitted. Invalid types raise `UnexpectedError`
+instead of being silently ignored. The constructor and setters still convert
+dictionaries to the corresponding entity classes.
 
 Example:
 

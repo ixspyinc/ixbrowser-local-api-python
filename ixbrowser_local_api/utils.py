@@ -1,12 +1,14 @@
+import logging
+
 import requests
 from datetime import datetime
 from .consts import Consts
 from .errors import UnexpectedError, HttpError, ResponseError
 
+logger = logging.getLogger('ixbrowser_local_api.http')
+
 
 class Utils(object):
-
-    show_request_log = False
 
     @staticmethod
     def now():
@@ -20,9 +22,8 @@ class Utils(object):
         :param params:
         :return:
         """
-        if Utils.show_request_log:
-            print('[debug info]request url=', url)
-            print('[debug info]request params=', params)
+        logger.debug('request url=%s', url)
+        logger.debug('request params=%s', params)
         try:
             r = requests.post(url, json=params, timeout=20)
         except Exception as e:
@@ -30,8 +31,8 @@ class Utils(object):
 
         if r.status_code != Consts.HTTP_CODE_FOR_SUCCESS:
             raise HttpError(r.status_code)
-        if Utils.show_request_log:
-            print('[debug info]response string=', r.text)
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug('response string=%s', r.text)
         try:
             result = r.json()
         except ValueError as e:
@@ -94,4 +95,3 @@ class Utils(object):
                 "The paginated response 'data' must be a JSON array, got: {}".format(type(data).__name__))
 
         return total, data
-

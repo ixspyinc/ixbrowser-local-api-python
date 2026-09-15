@@ -84,7 +84,14 @@ class Profile(object):
         for k, v in self.__dict__.items():
             if v is not None:
                 if k == 'proxy_config' or k == 'preference_config' or k == 'fingerprint_config':
-                    nested = v.dump_to_dict()
+                    if isinstance(v, dict):
+                        nested = v
+                    elif callable(getattr(v, 'dump_to_dict', None)):
+                        nested = v.dump_to_dict()
+                    else:
+                        raise UnexpectedError(k + ' must be a dictionary or an entity with dump_to_dict()')
+                    if not isinstance(nested, dict):
+                        raise UnexpectedError(k + '.dump_to_dict() must return a dictionary')
                     # An entity whose fields are all unset must be omitted, like a
                     # None field, instead of being sent as an empty object.
                     if len(nested) > 0:
