@@ -70,8 +70,9 @@ class Utils(object):
         :param params:
         :return:
         """
-        logger.debug('request url=%s', url)
-        logger.debug('request params=%s', _sanitize_for_log(params))
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug('request url=%s', url)
+            logger.debug('request params=%s', _sanitize_for_log(params))
         try:
             transport = requests if session is None else session
             r = transport.post(url, json=params, timeout=timeout)

@@ -67,7 +67,7 @@ See [error-handling.md](error-handling.md).
 | `clear_profile_cache(profile_id)` | `profile-clear-cache` | Clear profile cache. |
 | `clear_profile_cache_and_cookies(profile_id)` | `profile-clear-cache-and-cookies` | Clear profile cache and cookies. |
 | `clear_profile_cache_keep_extensions(profile_id)` | `profile-clear-cache-keep-extensions` | Clear profile cache but keep extensions. |
-| `clear_profile_cloud_data(profile_id, data_type)` | `profile-clear-cloud-data` | Clear selected cloud data of a profile. `data_type` accepts `Consts.CLOUD_DATA_TYPE_INDEXED_DB`, `Consts.CLOUD_DATA_TYPE_LOCAL_STORAGE` or `Consts.CLOUD_DATA_TYPE_EXTENSION_DATA`, as a string or a list. |
+| `clear_profile_cloud_data(profile_id, data_type)` | `profile-clear-cloud-data` | Clear selected cloud data of a profile. `data_type` accepts `Consts.CLOUD_DATA_TYPE_INDEXED_DB`, `Consts.CLOUD_DATA_TYPE_LOCAL_STORAGE` or `Consts.CLOUD_DATA_TYPE_EXTENSION_DATA`, as a string or a list. The argument is required by the service; omitting it remains call-compatible with SDK 1.2.6 but returns the normal client error result without sending a request. |
 | `clear_profile_saved_user_password(profile_id)` | `profile-clear-saved-user-password` | Clear the account and password saved by the browser in a profile; returns `True` on success. |
 | `close_profile_via_selenium(obj)` | N/A | Deprecated Selenium helper. Prefer `close_profile`. |
 

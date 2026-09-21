@@ -15,6 +15,15 @@ def test_request_logs_are_silent_at_warning(transport, caplog, capsys):
     assert capsys.readouterr() == ('', '')
 
 
+def test_disabled_debug_does_not_sanitize_request_params(transport, caplog, monkeypatch):
+    def fail_if_called(_value):
+        raise AssertionError('Request params should not be sanitized for disabled logs')
+
+    monkeypatch.setattr('ixbrowser_local_api.utils._sanitize_for_log', fail_if_called)
+    with caplog.at_level(logging.WARNING, logger=LOGGER):
+        assert Utils.get_api_response('http://x/api/v2/test', {'nested': {'password': 'secret'}}) is True
+
+
 def test_debug_logs_use_named_logger_without_printing(transport, caplog, capsys):
     params = {
         'password': 'test-secret',

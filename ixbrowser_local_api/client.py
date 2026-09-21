@@ -423,10 +423,12 @@ class IXBrowserClient(object):
             {'profile_id': self._profile_ids(profile_id)},
         )
 
-    def clear_profile_cloud_data(self, profile_id, data_type):
+    def clear_profile_cloud_data(self, profile_id, data_type=None):
         def build_params():
             if data_type is None:
-                data_types = []
+                raise UnexpectedError(
+                    'data_type is required. The optional values are: {}.'.format(
+                        Consts.CLOUD_DATA_TYPE_LIST))
             elif isinstance(data_type, list):
                 data_types = data_type
             else:

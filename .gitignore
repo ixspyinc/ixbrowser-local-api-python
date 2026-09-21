@@ -11,4 +11,6 @@
 /.pytest-libs/
 /.piptmp/
 /.ruff_cache/
+/.ruff-bin/
 *.egg-info/
+*REVIEW*.md

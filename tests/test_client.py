@@ -191,9 +191,13 @@ class TestClearCloudData(object):
         assert 'not supported' in client.message
         assert 'indexed_db' in client.message
 
-    def test_data_type_is_a_required_argument(self):
+    def test_omitted_data_type_uses_the_client_error_contract(self, client, transport):
         signature = inspect.signature(IXBrowserClient.clear_profile_cloud_data)
-        assert signature.parameters['data_type'].default is inspect.Parameter.empty
+        assert signature.parameters['data_type'].default is None
+        assert client.clear_profile_cloud_data(1) is None
+        assert transport.call_count == 0
+        assert client.code == UNEXPECTED_ERROR_CODE
+        assert 'data_type is required' in client.message
 
     def test_profile_id_is_normalised_to_a_list(self, client, transport):
         transport.reply(payload={'error': {'code': 0}, 'data': [1]})
