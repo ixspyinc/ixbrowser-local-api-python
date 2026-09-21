@@ -50,6 +50,30 @@ jobs:
       - name: Run ruff
         run: ruff check .
 
+  quality:
+    name: Types and coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install quality dependencies
+        run: |
+          pip install -r requirements-dev.txt
+          pip install -r requirements-quality.txt
+          pip install .
+
+      - name: Run mypy
+        run: mypy
+
+      - name: Measure test coverage
+        run: pytest --cov=ixbrowser_local_api --cov-report=term-missing
+
   docs-contract:
     name: Official doc contract
     runs-on: ubuntu-latest

@@ -95,6 +95,10 @@ proxy.change_to_custom_mode(
 proxy.set_bypass_list(["*.ipinfo.io", "ixbrowser.com"])
 ```
 
+Bypass list items must be strings. URL extraction mode validates its format,
+proxy type and extraction method against the values exposed by `Consts` before
+the request is sent.
+
 Purchased proxy example:
 
 ```python

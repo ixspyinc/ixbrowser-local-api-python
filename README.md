@@ -19,8 +19,13 @@ If your local API service uses a different host or port, pass them to `IXBrowser
 ```python
 from ixbrowser_local_api import IXBrowserClient
 
-c = IXBrowserClient(target="127.0.0.1", port=53200)
+c = IXBrowserClient(target="127.0.0.1", port=53200, timeout=(2, 20))
 ```
+
+The client reuses an HTTP session. Use it as a context manager when its lifetime
+is bounded, or call `c.close()` when it is no longer needed. Do not share one
+client instance between concurrent callers: `code`, `message` and `total`
+describe only the latest call.
 
 ## Installation
 

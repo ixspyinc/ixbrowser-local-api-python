@@ -335,3 +335,84 @@ class TestProfileEntities(object):
             'profile_id': 161,
             'preference_config': {'block_image': 1},
         }
+
+
+class TestReviewContractImprovements(object):
+
+    @pytest.mark.parametrize('method', ['create_profile', 'update_profile'])
+    def test_missing_profile_uses_the_client_error_contract(self, client, transport, method):
+        client.code = 999
+        client.message = 'stale'
+        client.total = 10
+        assert getattr(client, method)(None) is None
+        assert client.code == UNEXPECTED_ERROR_CODE
+        assert 'profile is required' in client.message
+        assert client.total is None
+        assert transport.call_count == 0
+
+    def test_successful_null_data_is_normalised_to_true(self, client, transport):
+        transport.reply(payload={'error': {'code': 0}, 'data': None})
+        assert client.close_profile(1) is True
+        assert client.code is None
+
+    def test_open_profile_accepts_tuple_startup_args(self, client, transport):
+        transport.reply(payload={'error': {'code': 0}, 'data': {'webdriver': 'x'}})
+        result = client.open_profile(1, startup_args=('--no-sandbox',))
+        assert result == {'webdriver': 'x'}
+        assert transport.last['payload']['args'] == [
+            '--no-sandbox', '--disable-extension-welcome-page']
+
+    @pytest.mark.parametrize('startup_args', ['--no-sandbox', [1]])
+    def test_open_profile_rejects_invalid_startup_args(self, client, transport, startup_args):
+        assert client.open_profile(1, startup_args=startup_args) is None
+        assert client.code == UNEXPECTED_ERROR_CODE
+        assert 'startup_args' in client.message
+        assert transport.call_count == 0
+
+    def test_batch_close_normalises_one_profile_id(self, client, transport):
+        transport.reply(payload={'error': {'code': 0}, 'data': 'success'})
+        assert client.close_profile_in_batches(7) == 'success'
+        assert transport.last['payload'] == {'profile_id': [7]}
+
+    def test_invalid_transfer_proxy_mode_is_rejected_locally(self, client, transport):
+        assert client.create_profile_transfer_code(
+            1, 'password', transfer_proxy=1, transfer_proxy_mode=99) is None
+        assert client.code == UNEXPECTED_ERROR_CODE
+        assert 'transfer_proxy_mode' in client.message
+        assert transport.call_count == 0
+
+    def test_transfer_proxy_mode_is_ignored_when_proxy_transfer_is_disabled(self, client, transport):
+        transport.reply(payload={'error': {'code': 0}, 'data': {'transfer_code': 'abc'}})
+        assert client.create_profile_transfer_code(
+            1, 'password', transfer_proxy=0, transfer_proxy_mode=99) == 'abc'
+        assert 'transfer_proxy_mode' not in transport.last['payload']
+
+    def test_invalid_extraction_mode_is_reported_without_a_request(self, client, transport):
+        assert client.update_profile_to_api_extraction_proxy_mode(
+            1, 'https://example.test/proxy', format_type='xml') is None
+        assert client.code == UNEXPECTED_ERROR_CODE
+        assert 'format_type' in client.message
+        assert transport.call_count == 0
+
+    def test_deprecated_selenium_helper_warns_and_uses_capability_detection(self):
+        calls = []
+
+        class SwitchTo:
+            @staticmethod
+            def window(handle):
+                calls.append(('switch', handle))
+
+        class Driver:
+            window_handles = ['a', 'b']
+            switch_to = SwitchTo()
+
+            @staticmethod
+            def close():
+                calls.append(('close', None))
+
+        with pytest.warns(DeprecationWarning):
+            IXBrowserClient.close_profile_via_selenium(Driver())
+        assert calls == [
+            ('switch', 'a'), ('close', None),
+            ('switch', 'b'), ('close', None),
+        ]

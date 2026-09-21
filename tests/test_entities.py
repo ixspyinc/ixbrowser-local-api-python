@@ -44,6 +44,12 @@ class TestProfile(object):
         profile = Profile({'name': 'demo', 'not_a_field': 1})
         assert profile.dump_to_dict() == {'name': 'demo'}
 
+    def test_build_from_dict_cannot_overwrite_methods(self):
+        profile = Profile({'name': 'demo', 'dump_to_dict': 1, 'reset_all_attributes': 2})
+        assert callable(profile.dump_to_dict)
+        assert callable(profile.reset_all_attributes)
+        assert profile.dump_to_dict() == {'name': 'demo'}
+
     def test_set_custom_page_and_blank_page(self):
         profile = Profile()
         profile.set_custom_page('https://www.ixbrowser.com')
@@ -113,7 +119,7 @@ class TestProxy(object):
         proxy.change_to_url_extraction_mode('https://127.0.0.1/extract')
         assert proxy.proxy_mode == Consts.PROXY_MODE_EXTRACT_FROM_URL
         assert proxy.proxy_service == 'general'
-        assert proxy.proxy_data_format_type == Consts.PROXY_DATA_FROMAT_TYPE_TXT
+        assert proxy.proxy_data_format_type == Consts.PROXY_DATA_FORMAT_TYPE_TXT
         assert proxy.proxy_data_txt_format == Consts.PROXY_DATA_TXT_FORMAT_LIST[0]
         assert proxy.proxy_data_json_format is None
         assert proxy.proxy_extraction_method == Consts.PROXY_EXTRACT_FROM_URL_FRESH_TYPE_WHEN_INVALID
@@ -122,10 +128,21 @@ class TestProxy(object):
         proxy = Proxy()
         mapping = proxy.get_url_extraction_mode_json_mapping('ip', 'port')
         proxy.change_to_url_extraction_mode('https://127.0.0.1/extract',
-                                            format_type=Consts.PROXY_DATA_FROMAT_TYPE_JSON,
+                                            format_type=Consts.PROXY_DATA_FORMAT_TYPE_JSON,
                                             json_mapping=mapping)
         assert proxy.proxy_data_json_format == {'ip': 'ip', 'port': 'port'}
         assert proxy.proxy_data_txt_format is None
+
+    @pytest.mark.parametrize('keyword,value', [
+        ('format_type', 'xml'),
+        ('proxy_type', 'telnet'),
+        ('extract_method', 'sometimes'),
+    ])
+    def test_url_extraction_mode_rejects_unknown_enums(self, keyword, value):
+        proxy = Proxy()
+        with pytest.raises(UnexpectedError, match=keyword):
+            proxy.change_to_url_extraction_mode(
+                'https://127.0.0.1/extract', **{keyword: value})
 
     def test_json_mapping_omits_absent_credentials(self):
         proxy = Proxy()
@@ -171,6 +188,16 @@ class TestProxy(object):
         proxy.set_bypass_list(None)
         assert proxy.enable_bypass is False
         assert proxy.bypass_list == ''
+
+    def test_set_bypass_list_rejects_non_string_items(self):
+        proxy = Proxy()
+        with pytest.raises(UnexpectedError, match='only strings'):
+            proxy.set_bypass_list(['example.test', 1])
+
+    def test_build_from_dict_cannot_overwrite_methods(self):
+        proxy = Proxy({'proxy_ip': '127.0.0.1', 'dump_to_dict': 1})
+        assert callable(proxy.dump_to_dict)
+        assert proxy.dump_to_dict() == {'proxy_ip': '127.0.0.1'}
 
 
 class TestPreference(object):

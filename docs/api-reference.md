@@ -26,13 +26,19 @@ otherwise `0.0.0`.
 Use a custom target or port when needed:
 
 ```python
-c = IXBrowserClient(target="127.0.0.1", port=53200)
+c = IXBrowserClient(target="127.0.0.1", port=53200, timeout=(2, 20))
 ```
+
+The client owns a reusable HTTP session by default and supports
+`with IXBrowserClient(...) as c:`. Call `close()` when a long-lived client is no
+longer needed. A custom requests-compatible session may be supplied with
+`session=`.
 
 ## Return Convention
 
-Most methods return API data on success. If the request fails, the method returns
-`None`, and the error details are available on `c.code` and `c.message`.
+Most methods return API data on success. Successful responses without data return
+`True`. If the request fails, the method returns `None`, and the error details are
+available on `c.code` and `c.message`.
 
 See [error-handling.md](error-handling.md).
 
@@ -45,10 +51,10 @@ See [error-handling.md](error-handling.md).
 | `get_native_opened_profile_list()` | `native-client-profile-opened-list` | List profiles opened by the native client. |
 | `open_profile(...)` | `profile-open` | Open a profile and return automation connection details. |
 | `open_profile_with_random_fingerprint(...)` | `profile-open-with-random-fingerprint` | Open a profile while applying a randomized fingerprint. |
-| `arrange_tile_opened_profile(...)` | `profile-opened-list-arrange-tile` | Arrange opened profile windows in a tiled layout. |
+| `arrange_tile_opened_profile(...)` | `profile-opened-list-arrange-tile` | Arrange opened profile windows in a tiled layout; returns `True` on success. |
 | `close_profile(profile_id)` | `profile-close` | Close one profile. |
-| `close_profile_in_batches(profile_id)` | `profile-close-in-batches` | Close multiple profiles. |
-| `reset_profile_open_state(profile_id)` | `profile-open-state-reset` | Reset the open state of a profile that is shown as opened but is actually closed. |
+| `close_profile_in_batches(profile_id)` | `profile-close-in-batches` | Close one profile ID or a list of profile IDs. |
+| `reset_profile_open_state(profile_id)` | `profile-open-state-reset` | Reset the open state of a profile that is shown as opened but is actually closed; returns `True` on success. |
 | `create_profile(profile)` | `profile-create` | Create a profile from a `Profile` entity. |
 | `create_profile_by_copying(...)` | `profile-copy` | Create a profile by copying an existing profile. |
 | `update_profile(profile)` | `profile-update` | Update a profile from a `Profile` entity. |
@@ -62,7 +68,7 @@ See [error-handling.md](error-handling.md).
 | `clear_profile_cache_and_cookies(profile_id)` | `profile-clear-cache-and-cookies` | Clear profile cache and cookies. |
 | `clear_profile_cache_keep_extensions(profile_id)` | `profile-clear-cache-keep-extensions` | Clear profile cache but keep extensions. |
 | `clear_profile_cloud_data(profile_id, data_type)` | `profile-clear-cloud-data` | Clear selected cloud data of a profile. `data_type` accepts `Consts.CLOUD_DATA_TYPE_INDEXED_DB`, `Consts.CLOUD_DATA_TYPE_LOCAL_STORAGE` or `Consts.CLOUD_DATA_TYPE_EXTENSION_DATA`, as a string or a list. |
-| `clear_profile_saved_user_password(profile_id)` | `profile-clear-saved-user-password` | Clear the account and password saved by the browser in a profile. |
+| `clear_profile_saved_user_password(profile_id)` | `profile-clear-saved-user-password` | Clear the account and password saved by the browser in a profile; returns `True` on success. |
 | `close_profile_via_selenium(obj)` | N/A | Deprecated Selenium helper. Prefer `close_profile`. |
 
 ## Profile Proxy Methods
@@ -125,7 +131,7 @@ See [error-handling.md](error-handling.md).
 | Method | Local API action | Purpose |
 | --- | --- | --- |
 | `get_gateway_list()` | `gateway-list` | List available gateways. |
-| `switch_gateway(gateway_id)` | `gateway-switch` | Switch the active gateway. |
+| `switch_gateway(gateway_id)` | `gateway-switch` | Switch the active gateway; returns `True` on success. |
 
 ## Related Files
 

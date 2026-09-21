@@ -16,8 +16,14 @@ def test_request_logs_are_silent_at_warning(transport, caplog, capsys):
 
 
 def test_debug_logs_use_named_logger_without_printing(transport, caplog, capsys):
-    params = {'password': 'test-secret', 'nested': {'a': 1}}
-    payload = {'error': {'code': 0}, 'data': {'cookie': 'test-cookie'}}
+    params = {
+        'password': 'test-secret',
+        'nested': {'items': [{'cookie': 'nested-cookie', 'access_token': 'nested-token'}]},
+    }
+    payload = {
+        'error': {'code': 0},
+        'data': {'cookie': 'test-cookie', 'profiles': [{'tfa_secret': 'secret'}]},
+    }
     transport.reply(payload=payload)
     with caplog.at_level(logging.DEBUG, logger=LOGGER):
         result = Utils.get_api_response('http://x/api/v2/test', params)
@@ -25,10 +31,19 @@ def test_debug_logs_use_named_logger_without_printing(transport, caplog, capsys)
     assert len(records) == 3
     assert all(record.levelno == logging.DEBUG for record in records)
     assert 'http://x/api/v2/test' in records[0].getMessage()
-    assert 'test-secret' in records[1].getMessage()  # Redaction is deliberately deferred.
-    assert 'test-cookie' in records[2].getMessage()
-    assert result == {'cookie': 'test-cookie'}
-    assert params == {'password': 'test-secret', 'nested': {'a': 1}}
+    combined = '\n'.join(record.getMessage() for record in records)
+    assert 'test-secret' not in combined
+    assert 'nested-cookie' not in combined
+    assert 'nested-token' not in combined
+    assert 'test-cookie' not in combined
+    assert 'secret' not in combined
+    assert '******' in records[1].getMessage()
+    assert "'data_type': 'dict'" in records[2].getMessage()
+    assert result == payload['data']
+    assert params == {
+        'password': 'test-secret',
+        'nested': {'items': [{'cookie': 'nested-cookie', 'access_token': 'nested-token'}]},
+    }
     assert transport.last['payload'] == params
     assert capsys.readouterr() == ('', '')
 

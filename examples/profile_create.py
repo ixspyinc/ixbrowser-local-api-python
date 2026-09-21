@@ -35,7 +35,7 @@ proxy.change_to_custom_mode(Consts.PROXY_TYPE_SOCKS5, '127.0.0.1', '10808')
 '''
 json_mapping = proxy.get_url_extraction_mode_json_mapping("ip", "port")
 proxy.change_to_url_extraction_mode('https://127.0.0.1/extract_url', 
-                                    format_type=Consts.PROXY_DATA_FROMAT_TYPE_JSON,
+                                    format_type=Consts.PROXY_DATA_FORMAT_TYPE_JSON,
                                     json_mapping=json_mapping
                                     )
 '''

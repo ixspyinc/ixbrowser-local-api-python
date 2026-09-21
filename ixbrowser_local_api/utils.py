@@ -7,6 +7,54 @@ from .errors import UnexpectedError, HttpError, ResponseError
 
 logger = logging.getLogger('ixbrowser_local_api.http')
 
+_REDACTED = '******'
+_SENSITIVE_KEYS = {
+    'authorization',
+    'cookie',
+    'cookies',
+    'login_pwd',
+    'password',
+    'proxy_password',
+    'tfa_secret',
+    'token',
+    'transfer_code',
+}
+
+
+def _is_sensitive_key(key):
+    normalised = str(key).lower()
+    return normalised in _SENSITIVE_KEYS or any(
+        marker in normalised for marker in ('password', 'secret', 'token', 'cookie'))
+
+
+def _sanitize_for_log(value):
+    """Return a recursively redacted copy suitable for DEBUG logs."""
+    if isinstance(value, dict):
+        return {
+            key: (_REDACTED if _is_sensitive_key(key) else _sanitize_for_log(item))
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_sanitize_for_log(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_sanitize_for_log(item) for item in value)
+    return value
+
+
+def _response_summary(result):
+    """Describe a response without writing response data to application logs."""
+    if not isinstance(result, dict):
+        return {'type': type(result).__name__}
+    error = result.get('error')
+    code = error.get('code') if isinstance(error, dict) else None
+    data = result.get('data')
+    summary = {'error_code': code, 'data_type': type(data).__name__}
+    if isinstance(data, dict):
+        summary['data_keys'] = sorted(str(key) for key in data)
+    elif isinstance(data, (list, tuple)):
+        summary['data_length'] = len(data)
+    return summary
+
 
 class Utils(object):
 
@@ -15,7 +63,7 @@ class Utils(object):
         return int(datetime.now().timestamp() * 1000)
 
     @staticmethod
-    def get_api_response(url, params=None):
+    def get_api_response(url, params=None, timeout=20, session=None):
         """
         get api response
         :param url:
@@ -23,20 +71,22 @@ class Utils(object):
         :return:
         """
         logger.debug('request url=%s', url)
-        logger.debug('request params=%s', params)
+        logger.debug('request params=%s', _sanitize_for_log(params))
         try:
-            r = requests.post(url, json=params, timeout=20)
+            transport = requests if session is None else session
+            r = transport.post(url, json=params, timeout=timeout)
         except Exception as e:
             raise UnexpectedError('exception desc:' + str(e)) from e
 
         if r.status_code != Consts.HTTP_CODE_FOR_SUCCESS:
             raise HttpError(r.status_code)
-        if logger.isEnabledFor(logging.DEBUG):
-            logger.debug('response string=%s', r.text)
         try:
             result = r.json()
         except ValueError as e:
             raise UnexpectedError('The returned data is not valid JSON') from e
+
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug('response status=%s summary=%s', r.status_code, _response_summary(result))
 
         if not isinstance(result, dict):
             raise UnexpectedError('The returned data must be a JSON object')

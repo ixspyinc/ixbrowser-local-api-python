@@ -102,8 +102,11 @@ def test_sdist_rebuild_freezes_version_without_tag(tmp_path):
                             env=env, capture_output=True, text=True)
     assert result.returncode == 0, result.stderr
     with zipfile.ZipFile(str(next((release / 'dist').glob('*.whl')))) as wheel:
+        names = wheel.namelist()
         version_source = wheel.read('ixbrowser_local_api/version.py').decode('utf8')
         metadata = wheel.read(next(name for name in wheel.namelist() if name.endswith('/METADATA'))).decode('utf8')
+        assert 'ixbrowser_local_api/py.typed' in names
+        assert not any(name.startswith('tests/') for name in names)
     namespace = {}
     exec(version_source, namespace)
     assert namespace['__version__'] == '1.2.0rc1'

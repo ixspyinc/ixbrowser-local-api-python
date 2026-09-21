@@ -1,1516 +1,560 @@
 import json
-from .errors import BaseError, UNEXPECTED_ERROR_CODE
-from .utils import Utils
+import warnings
+from typing import Optional
+
+import requests
+
 from .consts import Consts
-from .entities import Profile, Proxy, Preference, Fingerprint
+from .entities import Fingerprint, Preference, Profile, Proxy
+from .errors import BaseError, UnexpectedError
+from .utils import Utils
+
 
 class IXBrowserClient(object):
-    def __init__(self, target=Consts.DEFAULT_API_TARGET, port=Consts.DEFAULT_API_PORT):
-        """
+    """Client for the ixBrowser Local API.
 
-        :param target:
-        :param port:
-        """
+    Instances keep the latest request state in ``code``, ``message`` and
+    ``total``. They are intentionally not safe to share between concurrent
+    callers.
+    """
+
+    def __init__(self, target=Consts.DEFAULT_API_TARGET, port=Consts.DEFAULT_API_PORT,
+                 timeout=20, session=None):
         self.base_url = "http://{}:{}/api/v2/".format(target, port)
-
+        self.timeout = timeout
+        self._owns_session = session is None
+        self.session = requests.Session() if session is None else session
         self.total = None
         self.code = None
         self.message = None
+
+    def close(self):
+        """Close the internally owned HTTP session."""
+        if self._owns_session:
+            self.session.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
 
     def _reset_request_state(self):
         self.code = None
         self.message = None
         self.total = None
 
+    def _dispatch_action(self, action, params=None, paginated=False,
+                         force_boolean_success=False, transform=None):
+        """Build, send and unwrap one request under the common error contract."""
+        self._reset_request_state()
+        try:
+            payload = params() if callable(params) else (params or {})
+            result = Utils.get_api_response(
+                self.base_url + action, payload, timeout=self.timeout, session=self.session)
+            if paginated:
+                self.total, data = Utils.get_paginated_data(result)
+                return data
+            if force_boolean_success or result is None:
+                return True
+            if transform is not None:
+                return transform(result)
+            return result
+        except BaseError as error:
+            self.code = error.code
+            self.message = error.message
+            return None
+
+    @staticmethod
+    def _profile_payload(profile):
+        if profile is None:
+            raise UnexpectedError('profile is required and cannot be None')
+        if not isinstance(profile, Profile):
+            raise UnexpectedError('profile must be a Profile instance')
+        return profile.dump_to_dict()
+
+    @staticmethod
+    def _startup_args(startup_args):
+        if startup_args is None:
+            return []
+        if isinstance(startup_args, (str, bytes)):
+            raise UnexpectedError('startup_args must be an iterable of strings, not a string')
+        try:
+            copied = list(startup_args)
+        except TypeError as error:
+            raise UnexpectedError('startup_args must be an iterable of strings') from error
+        if not all(isinstance(arg, str) for arg in copied):
+            raise UnexpectedError('startup_args must contain only strings')
+        return copied
+
+    @staticmethod
+    def _profile_ids(profile_id):
+        return profile_id if isinstance(profile_id, list) else [profile_id]
+
     def get_profile_list(self, keyword=None, group_id=0, page=1, limit=10, tag_id=0, profile_id=0):
-        """
-        get profile list
-        :param keyword:
-        :param group_id:
-        :param page:
-        :param limit:
-        :param tag_id:
-        :param profile_id:
-        :return: list
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_LIST
-        params = dict()
+        params = {}
         if profile_id == 0:
-            params['page'] = page
-            params['limit'] = limit
+            params.update(page=page, limit=limit)
             if group_id > 0:
                 params['group_id'] = group_id
-            
             if tag_id > 0:
                 params['tag_id'] = tag_id
-
-            if keyword is not None and keyword != '':
+            if keyword:
                 params['name'] = keyword
         else:
             params['profile_id'] = profile_id
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            self.total, data = Utils.get_paginated_data(result)
-            return data
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_LIST, params, paginated=True)
 
     def get_opened_profile_list(self):
-        """
-        get opened profile list
-        :return: list
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_OPENED_LIST
-        params = dict()
-        try:
-            self._reset_request_state()
-            return Utils.get_api_response(url, params)
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_OPENED_LIST)
 
     def get_native_opened_profile_list(self):
-        """
-        get native opened profile list
-        :return: list
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_NATIVE_OPENED_LIST
-        params = dict()
-        try:
-            self._reset_request_state()
-            return Utils.get_api_response(url, params)
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_NATIVE_OPENED_LIST)
 
-        if self.code is not None:
-            return None
-        else:
-            return True
-    
-    def open_profile(self, profile_id, load_extensions=True, load_profile_info_page=False, cookies_backup=True,
-                     cookie=None, disable_extension_welcome_page=True, startup_args=None):
-        """
-        open profile
-        :param profile_id:
-        :param load_extensions:
-        :param load_profile_info_page:
-        :param cookies_backup:
-        :param cookie:
-        :param disable_extension_welcome_page:
-        :param startup_args:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_OPEN
-        params = dict()
-        params['profile_id'] = profile_id
-        params['load_extensions'] = load_extensions
-        params['load_profile_info_page'] = load_profile_info_page
-        params['cookies_backup'] = cookies_backup
-        
-        # None appears as null in json, which will cause cookie loading to fail.
-        if cookie is not None:
-            params['cookie'] = cookie
+    def open_profile(self, profile_id, load_extensions=True, load_profile_info_page=False,
+                     cookies_backup=True, cookie=None, disable_extension_welcome_page=True,
+                     startup_args=None):
+        def build_params():
+            args = self._startup_args(startup_args)
+            if disable_extension_welcome_page and '--disable-extension-welcome-page' not in args:
+                args.append('--disable-extension-welcome-page')
+            params = {
+                'profile_id': profile_id,
+                'load_extensions': load_extensions,
+                'load_profile_info_page': load_profile_info_page,
+                'cookies_backup': cookies_backup,
+                'args': args,
+            }
+            if cookie is not None:
+                params['cookie'] = cookie
+            return params
 
-        if startup_args is None:
-            copy_startup_args = []
-        else:
-            copy_startup_args = startup_args.copy()
-            # opy_startup_args = [i for i in startup_args]
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_OPEN, build_params)
 
-        if disable_extension_welcome_page and '--disable-extension-welcome-page' not in copy_startup_args:
-            copy_startup_args.append('--disable-extension-welcome-page')
-        params['args'] = copy_startup_args
+    def open_profile_with_random_fingerprint(
+            self, profile_id, load_extensions=True, load_profile_info_page=False,
+            cookie=None, disable_extension_welcome_page=True, startup_args=None,
+            proxy_config: Optional[Proxy] = None,
+            fingerprint_config: Optional[Fingerprint] = None,
+            preference_config: Optional[Preference] = None):
+        def build_params():
+            args = self._startup_args(startup_args)
+            if disable_extension_welcome_page and '--disable-extension-welcome-page' not in args:
+                args.append('--disable-extension-welcome-page')
+            params = {
+                'profile_id': profile_id,
+                'load_extensions': load_extensions,
+                'load_profile_info_page': load_profile_info_page,
+                'args': args,
+            }
+            if cookie is not None:
+                params['cookie'] = cookie
+            for key, entity in (
+                    ('proxy_config', proxy_config),
+                    ('fingerprint_config', fingerprint_config),
+                    ('preference_config', preference_config)):
+                if entity is not None:
+                    params[key] = entity.dump_to_dict()
+            return params
 
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_OPEN_WITH_FINGERPRINT, build_params)
 
-    def open_profile_with_random_fingerprint(self, profile_id, load_extensions=True, load_profile_info_page=False,
-                                             cookie=None, disable_extension_welcome_page=True, startup_args=None,
-                                             proxy_config: Proxy = None, fingerprint_config: Fingerprint = None, preference_config: Preference = None):
-        """
-        open profile with random fingerprint
-        :param profile_id:
-        :param load_extensions:
-        :param load_profile_info_page:
-        :param cookie:
-        :param disable_extension_welcome_page:
-        :param startup_args:
-        :param proxy_config:
-        :param fingerprint_config:
-        :param preference_config:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_OPEN_WITH_FINGERPRINT
-        params = dict()
-        params['profile_id'] = profile_id
-        params['load_extensions'] = load_extensions
-        params['load_profile_info_page'] = load_profile_info_page
-
-        # None appears as null in json, which will cause cookie loading to fail.
-        if cookie is not None:
-            params['cookie'] = cookie
-
-        
-        if startup_args is None:
-            copy_startup_args = []
-        else:
-            copy_startup_args = startup_args.copy()
-            # opy_startup_args = [i for i in startup_args]
-
-        if disable_extension_welcome_page and '--disable-extension-welcome-page' not in copy_startup_args:
-            copy_startup_args.append('--disable-extension-welcome-page')
-        params['args'] = copy_startup_args
-
-        if proxy_config is not None:
-            params['proxy_config'] = proxy_config.dump_to_dict()
-
-        if fingerprint_config is not None:
-            params['fingerprint_config'] = fingerprint_config.dump_to_dict()
-
-        if preference_config is not None:
-            params['preference_config'] = preference_config.dump_to_dict()
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-        if self.code is not None:
-            return None
-        else:
-            return True
-
-    def arrange_tile_opened_profile(self, screen=None, layout=None, adaptive=None, starting_position_x=None, starting_position_y=None, profile_size_width=None, profile_size_hight=None, profile_spacing_horizontal=None, profile_spacing_vertical=None, profile_deviaton_x=None, profile_deviaton_y=None, per_line_number_of_profiles=None):
-        """
-        arrage tile opened profile list
-        :param screen:
-        :param layout:
-        :param adaptive:
-        :param starting_position_x:
-        :param starting_position_y:
-        :param profile_size_width:
-        :param profile_size_hight:
-        :param profile_spacing_horizontal:
-        :param profile_spacing_vertical:
-        :param profile_deviaton_x:
-        :param profile_deviaton_y:
-        :param per_line_number_of_profiles:
-
-        :return: Bool
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_OPENED_LIST_ARRANGE_TILE
-        params = dict()
-        if screen is not None:
-            params['screen'] = screen
-        
-        if layout is not None:
-            params['layout'] = layout
-        
-        if adaptive is not None:
-            params['adaptive'] = adaptive
-        
-        if starting_position_x is not None:
-            params['starting_position_x'] = starting_position_x
-        
-        if starting_position_y is not None:
-            params['starting_position_y'] = starting_position_y
-        
-        if profile_size_width is not None:
-            params['profile_size_width'] = profile_size_width
-        
-        if profile_size_hight is not None:
-            params['profile_size_hight'] = profile_size_hight
-        
-        if profile_spacing_horizontal is not None:
-            params['profile_spacing_horizontal'] = profile_spacing_horizontal
-        
-        if profile_spacing_vertical is not None:
-            params['profile_spacing_vertical'] = profile_spacing_vertical
-        
-        if profile_deviaton_x is not None:
-            params['profile_deviaton_x'] = profile_deviaton_x
-        
-        if profile_deviaton_y is not None:
-            params['profile_deviaton_y'] = profile_deviaton_y
-        
-        if per_line_number_of_profiles is not None:
-            params['per_line_number_of_profiles'] = per_line_number_of_profiles
-        try:
-            self._reset_request_state()
-            Utils.get_api_response(url, params)
-            return True
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+    def arrange_tile_opened_profile(
+            self, screen=None, layout=None, adaptive=None, starting_position_x=None,
+            starting_position_y=None, profile_size_width=None, profile_size_hight=None,
+            profile_spacing_horizontal=None, profile_spacing_vertical=None,
+            profile_deviaton_x=None, profile_deviaton_y=None,
+            per_line_number_of_profiles=None):
+        values = {
+            'screen': screen, 'layout': layout, 'adaptive': adaptive,
+            'starting_position_x': starting_position_x,
+            'starting_position_y': starting_position_y,
+            'profile_size_width': profile_size_width,
+            'profile_size_hight': profile_size_hight,
+            'profile_spacing_horizontal': profile_spacing_horizontal,
+            'profile_spacing_vertical': profile_spacing_vertical,
+            'profile_deviaton_x': profile_deviaton_x,
+            'profile_deviaton_y': profile_deviaton_y,
+            'per_line_number_of_profiles': per_line_number_of_profiles,
+        }
+        params = {key: value for key, value in values.items() if value is not None}
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_OPENED_LIST_ARRANGE_TILE,
+            params,
+            force_boolean_success=True,
+        )
 
     def close_profile(self, profile_id):
-        """
-        close profile
-        :param profile_id:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_CLOSE
-        params = dict()
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_CLOSE, {'profile_id': profile_id})
 
-        params['profile_id'] = profile_id
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
-        
     @staticmethod
     def close_profile_via_selenium(obj):
-        """
-        [warning]close_profile is working properly, this function will be removed soon.
-        
-        Alias method of close_profile, will be deprecated in the future
-        :param obj: selenium.webdriver.chrome instance
-        :return:
-        """
-        whs = obj.window_handles
-        for handle in whs:
-            # Compatible with selenium 3 and selenium 4 methods
-            try:
-                # selenium 4
-                obj.switch_to.window(handle)
-            except Exception:
-                # selenium 3
+        """Deprecated Selenium helper. Prefer :meth:`close_profile`."""
+        warnings.warn(
+            'close_profile_via_selenium is deprecated; use close_profile instead',
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        selenium4_switch = getattr(getattr(obj, 'switch_to', None), 'window', None)
+        for handle in obj.window_handles:
+            if selenium4_switch is not None:
+                selenium4_switch(handle)
+            else:
                 obj.switch_to_window(handle)
             obj.close()
 
-    def close_profile_in_batches(self, profile_id: list):
-        """
-        close profile in batches
-        :param profile_id:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_CLOSE_IN_BATCHES
-        params = dict()
-
-        params['profile_id'] = profile_id
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+    def close_profile_in_batches(self, profile_id):
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_CLOSE_IN_BATCHES,
+            {'profile_id': self._profile_ids(profile_id)},
+        )
 
     def reset_profile_open_state(self, profile_id):
-        """
-        reset profile open state
-        Use it when the profile is still shown as opened but it is actually closed.
+        """Reset profile open state; return ``True`` on success."""
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_OPEN_STATE_RESET,
+            {'profile_id': profile_id},
+            force_boolean_success=True,
+        )
 
-        The interface returns null data on success, so True is returned instead of
-        the response data, otherwise success cannot be told apart from failure.
-        :param profile_id: profile id
-        :return: True
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_OPEN_STATE_RESET
-        params = dict()
-        params['profile_id'] = profile_id
+    def create_profile(self, profile: Optional[Profile] = None):
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_CREATE,
+            lambda: self._profile_payload(profile),
+        )
 
-        try:
-            self._reset_request_state()
-            Utils.get_api_response(url, params)
-            return True
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
-
-    def create_profile(self, profile: Profile = None):
-        """
-        create profile
-        :param profile: Profile entity class
-        :return: True
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_CREATE
-
-        params = profile.dump_to_dict()
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
-
-    def create_profile_by_copying(self, profile_id, name=None, group_id=None, site_id=None, site_url=None):
-        """
-        create profile by copying
-        :param profile_id: 
-        :param name: 
-        :param group_id: 
-        :param site_id: 
-        :param site_url: 
-        :return: True
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_COPY
-        params = dict()
-        params['profile_id'] = profile_id
+    def create_profile_by_copying(self, profile_id, name=None, group_id=None,
+                                  site_id=None, site_url=None):
+        params = {'profile_id': profile_id}
         if name is not None:
             params['name'] = name
-            
         if group_id is not None:
             params['group_id'] = group_id
-
         if site_id is not None:
             params['site_id'] = site_id
             if site_id == Consts.DEFAULT_SITE_ID_BLANK_PAGE:
                 site_url = None
-
         if site_url is not None:
             params['site_url'] = site_url
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_COPY, params)
 
-        if self.code is not None:
-            return None
-        else:
-            return True
+    def update_profile(self, profile: Optional[Profile] = None):
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_UPDATE,
+            lambda: self._profile_payload(profile),
+        )
 
-    def update_profile(self, profile: Profile = None):
-        """
-        update profile
-        :param profile:
-        :return: string
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_UPDATE
-        params = profile.dump_to_dict()
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
-
-    def update_profile_to_traffic_package_mode(self, profile_id, proxy_id, country=None, city=None,
-                                               gateway=None):
-        """
-        update profile to traffic package mode
-        :param profile_id:
-        :param proxy_id:
-        :param country:
-        :param city:
-        :param gateway:
-        :return: string
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_UPDATE_PROXY_TO_TRAFFIC_PACKAGE_MODE
-        params = dict()
-        params['profile_id'] = profile_id
-        params['proxy_info'] = dict()
-        params['proxy_info']['proxy_mode'] = Consts.PROXY_MODE_TRAFFIC_PACKAGE
-        params['proxy_info']['proxy_id'] = proxy_id
+    def update_profile_to_traffic_package_mode(self, profile_id, proxy_id,
+                                               country=None, city=None, gateway=None):
+        proxy_info = {'proxy_mode': Consts.PROXY_MODE_TRAFFIC_PACKAGE, 'proxy_id': proxy_id}
         if country is not None:
-            params['proxy_info']['country'] = country
+            proxy_info['country'] = country
         if city is not None:
-            params['proxy_info']['city'] = city
-
-        if gateway is None:
-            params['proxy_info']['gateway'] = Consts.DEFAULT_DATA_PACKAGE_GATEWAY
-        else:
-            params['proxy_info']['gateway'] = gateway
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+            proxy_info['city'] = city
+        proxy_info['gateway'] = Consts.DEFAULT_DATA_PACKAGE_GATEWAY if gateway is None else gateway
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_UPDATE_PROXY_TO_TRAFFIC_PACKAGE_MODE,
+            {'profile_id': profile_id, 'proxy_info': proxy_info},
+        )
 
     def update_profile_to_purchased_proxy_mode(self, profile_id, proxy_id):
-        """
-        update profile to purchased proxy mode
-        :param profile_id:
-        :param proxy_id:
-        :return: string
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_UPDATE_PROXY_TO_PURCHASED_MODE
-        params = dict()
-        params['profile_id'] = profile_id
-        params['proxy_info'] = dict()
-        params['proxy_info']['proxy_mode'] = Consts.PROXY_MODE_PURCHASED
-        params['proxy_info']['proxy_id'] = proxy_id
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_UPDATE_PROXY_TO_PURCHASED_MODE,
+            {
+                'profile_id': profile_id,
+                'proxy_info': {'proxy_mode': Consts.PROXY_MODE_PURCHASED, 'proxy_id': proxy_id},
+            },
+        )
 
-        if self.code is not None:
-            return None
-        else:
-            return True
+    def update_profile_to_custom_proxy_mode(
+            self, profile_id, proxy_type=Consts.PROXY_TYPE_DIRECT, proxy_ip=None,
+            proxy_port=None, proxy_user=None, proxy_password=None, proxy_check_line=None):
+        proxy_info = {
+            'proxy_mode': Consts.PROXY_MODE_CUSTOM,
+            'proxy_type': proxy_type,
+            'proxy_check_line': (Consts.DEFAULT_PROXY_CHECK_LINE
+                                 if proxy_check_line is None else proxy_check_line),
+        }
+        for key, value in (
+                ('proxy_ip', proxy_ip), ('proxy_port', proxy_port),
+                ('proxy_user', proxy_user), ('proxy_password', proxy_password)):
+            if value is not None:
+                proxy_info[key] = value
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_UPDATE_PROXY_TO_CUSTOM_MODE,
+            {'profile_id': profile_id, 'proxy_info': proxy_info},
+        )
 
-    def update_profile_to_custom_proxy_mode(self, profile_id, proxy_type=Consts.PROXY_TYPE_DIRECT, proxy_ip=None, proxy_port=None, proxy_user=None, proxy_password=None, proxy_check_line=None):
-        """
-        update profile to custom proxy mode
-        :param profile_id:
-        :param proxy_type:
-        :param proxy_ip:
-        :param proxy_port:
-        :param proxy_user:
-        :param proxy_password:
-        :param proxy_check_line:
-        :return: string
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_UPDATE_PROXY_TO_CUSTOM_MODE
-        params = dict()
-        params['profile_id'] = profile_id
-        params['proxy_info'] = dict()
-        params['proxy_info']['proxy_mode'] = Consts.PROXY_MODE_CUSTOM
-        params['proxy_info']['proxy_type'] = proxy_type
-        if proxy_ip is not None:
-            params['proxy_info']['proxy_ip'] = proxy_ip
-        if proxy_port is not None:
-            params['proxy_info']['proxy_port'] = proxy_port
-        if proxy_user is not None:
-            params['proxy_info']['proxy_user'] = proxy_user
-        if proxy_password is not None:
-            params['proxy_info']['proxy_password'] = proxy_password
-        if proxy_check_line is not None:
-            params['proxy_info']['proxy_check_line'] = proxy_check_line
-        else:
-            params['proxy_info']['proxy_check_line'] = Consts.DEFAULT_PROXY_CHECK_LINE
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
+    def update_profile_to_api_extraction_proxy_mode(
+            self, profile_id, proxy_url,
+            format_type=Consts.PROXY_DATA_FORMAT_TYPE_TXT,
+            proxy_type=Consts.PROXY_TYPE_SOCKS5,
+            extract_method=Consts.PROXY_EXTRACT_FROM_URL_FRESH_TYPE_WHEN_INVALID,
+            txt_mapping=None, json_mapping=None,
+            proxy_check_line=Consts.DEFAULT_PROXY_CHECK_LINE):
+        def build_params():
+            proxy = Proxy()
+            proxy.change_to_url_extraction_mode(
+                proxy_url, format_type, proxy_type, extract_method,
+                txt_mapping, json_mapping, proxy_check_line,
+            )
+            return {
+                'profile_id': profile_id,
+                'proxy_info': proxy.dump_url_extraction_mode_info_to_dict(),
+            }
 
-        if self.code is not None:
-            return None
-        else:
-            return True
-
-    def update_profile_to_api_extraction_proxy_mode(self, profile_id, 
-                                                    proxy_url, 
-                                                    format_type=Consts.PROXY_DATA_FROMAT_TYPE_TXT,
-                                                    proxy_type=Consts.PROXY_TYPE_SOCKS5, 
-                                                    extract_method = Consts.PROXY_EXTRACT_FROM_URL_FRESH_TYPE_WHEN_INVALID,
-                                                    txt_mapping = None,
-                                                    json_mapping = None,
-                                                    proxy_check_line=Consts.DEFAULT_PROXY_CHECK_LINE):
-        """
-        update profile to api-extraction proxy mode
-        :param profile_id:
-        :param proxy_url:
-        :param format_type:
-        :param proxy_type:
-        :param extract_method:
-        :param txt_mapping:
-        :param json_mapping:
-        :param proxy_check_line
-        :return: string
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_UPDATE_PROXY_TO_API_EXTRACTION_MODE
-        params = dict()
-        params['profile_id'] = profile_id
-
-        p = Proxy()
-        p.change_to_url_extraction_mode(proxy_url, format_type, proxy_type, extract_method, txt_mapping, json_mapping, proxy_check_line)
-        params['proxy_info'] = p.dump_url_extraction_mode_info_to_dict()
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_UPDATE_PROXY_TO_API_EXTRACTION_MODE,
+            build_params,
+        )
 
     def random_profile_fingerprint(self, profile_id):
-        """
-        random profile fingerprint
-        :param profile_id:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_RANDOM_FINGERPRINT
-        params = dict()
-        params['profile_id'] = profile_id
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_RANDOM_FINGERPRINT,
+            {'profile_id': profile_id},
+        )
 
-        if self.code is not None:
-            return None
-        else:
-            return True
+    def create_profile_transfer_code(self, profile_id, login_pwd, transfer_note=None,
+                                     transfer_proxy=None, transfer_proxy_mode=None):
+        def build_params():
+            params = {'profile_id': profile_id, 'password': login_pwd}
+            if transfer_note is not None:
+                params['transfer_note'] = 1 if transfer_note else 0
+            if transfer_proxy is not None:
+                params['transfer_proxy'] = 1 if transfer_proxy else 0
+                if params['transfer_proxy'] == 1 and transfer_proxy_mode is not None:
+                    supported = {
+                        Consts.TRANSFER_PROXY_MODE_SHARING,
+                        Consts.TRANSFER_PROXY_MODE_TRANSFER,
+                    }
+                    if transfer_proxy_mode not in supported:
+                        raise UnexpectedError(
+                            'transfer_proxy_mode must be one of: {}'.format(sorted(supported)))
+                    params['transfer_proxy_mode'] = transfer_proxy_mode
+            return params
 
-    def create_profile_transfer_code(self, profile_id, login_pwd, transfer_note=None, transfer_proxy=None,
-                                     transfer_proxy_mode=None):
-        """
-        create profile transfer code
-        :param profile_id:
-        :param login_pwd: login password
-        :param transfer_note: 0=disable 1=enable
-        :param transfer_proxy: 0=disable 1=enable
-        :param transfer_proxy_mode: 1=proxy sharing 2=proxy transfer
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_CREATE_TRANSFER_CODE
-        params = dict()
-        params['profile_id'] = profile_id
-        params['password'] = login_pwd
-        if transfer_note is not None:
-            params['transfer_note'] = 1 if transfer_note else 0
-        if transfer_proxy is not None:
-            params['transfer_proxy'] = 1 if transfer_proxy else 0
-            if params['transfer_proxy'] == 1:
-                if transfer_proxy_mode is not None:
-                    if transfer_proxy_mode == Consts.TRANSFER_PROXY_MODE_TRANSFER:
-                        params['transfer_proxy_mode'] = Consts.TRANSFER_PROXY_MODE_TRANSFER
-                    else:
-                        params['transfer_proxy_mode'] = Consts.TRANSFER_PROXY_MODE_SHARING
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            if 'transfer_code' in result:
+        def extract_transfer_code(result):
+            if isinstance(result, dict) and 'transfer_code' in result:
                 return result['transfer_code']
-            else:
-                return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
+            return result
 
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_CREATE_TRANSFER_CODE,
+            build_params,
+            transform=extract_transfer_code,
+        )
 
     def cancel_profile_transfer_code(self, profile_id):
-        """
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_CANCEL_TRANSFER_CODE,
+            {'profile_id': profile_id},
+        )
 
-        :param profile_id:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_CANCEL_TRANSFER_CODE
-        params = dict()
-        params['profile_id'] = profile_id
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
+    def import_profile_via_transfer_code(
+            self, transfer_code, proxy_config: Optional[Proxy] = None):
+        def build_params():
+            params = {'transfer_code': transfer_code}
+            if proxy_config is not None:
+                params['proxy_config'] = proxy_config.dump_to_dict()
+            return params
 
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_IMPORT_VIA_TRANSFER_CODE,
+            build_params,
+        )
 
-    def import_profile_via_transfer_code(self, transfer_code, proxy_config: Proxy = None):
-        """
-
-        :param transfer_code:
-        :param proxy_config:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_IMPORT_VIA_TRANSFER_CODE
-        params = dict()
-        params['transfer_code'] = transfer_code
-        if proxy_config is not None:
-            params['proxy_config'] = proxy_config.dump_to_dict()
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
-
-    def get_profile_transfer_record_list(self, keyword=None, record_type=Consts.TRANSFER_RECORD_LIST_TYPE_TRANSFER, page=1, limit=10):
-        """
-        get profile transfer record list
-        :param keyword:
-        :param record_type:
-        :param page:
-        :param limit:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_TRANSFER_RECORD_LIST
-        params = dict()
-        params['page'] = page
-        params['limit'] = limit
+    def get_profile_transfer_record_list(
+            self, keyword=None, record_type=Consts.TRANSFER_RECORD_LIST_TYPE_TRANSFER,
+            page=1, limit=10):
+        params = {'page': page, 'limit': limit}
         if record_type > 0:
             params['type'] = record_type
-
-        if keyword is not None and keyword != '':
+        if keyword:
             params['title'] = keyword
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            self.total, data = Utils.get_paginated_data(result)
-            return data
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_TRANSFER_RECORD_LIST,
+            params,
+            paginated=True,
+        )
 
     def update_profile_groups_in_batches(self, profile_id, group_id):
-        """
-        update profile groups in batches
-        :param profile_id: integer or list
-        :param group_id: integer
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_UPDATE_GROUPS_IN_BATCHES
-        params = dict()
-        params['group_id'] = group_id
-        if isinstance(profile_id, list):
-            params['profile_id'] = profile_id
-        else:
-            params['profile_id'] = [profile_id]
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_UPDATE_GROUPS_IN_BATCHES,
+            {'group_id': group_id, 'profile_id': self._profile_ids(profile_id)},
+        )
 
     def delete_profile(self, profile_id):
-        """
-        delete profile
-        :param profile_id:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_DELETE
-        params = dict()
-        params['profile_id'] = profile_id
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_DELETE, {'profile_id': profile_id})
 
     def empty_recycle_bin(self):
-        """
-        Empty all Profiles in the Recycle Bin
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_EMPTY_RECYCLE_BIN
-        params = dict()
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_EMPTY_RECYCLE_BIN)
 
     def get_profile_cookie(self, profile_id):
-        """
-        get profile cookie
-        :param profile_id:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_GET_COOKIES
-        params = dict()
-        params['profile_id'] = profile_id
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_GET_COOKIES,
+            {'profile_id': profile_id},
+        )
 
     def update_profile_cookie(self, profile_id, cookie):
-        """
-        update profile cookie
-        :param profile_id:
-        :param cookie: string or list
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_UPDATE_COOKIES
-        params = dict()
-        params['profile_id'] = profile_id
         if cookie is None:
-            params['cookie'] = ''
-        else:
-            if isinstance(cookie, str):
-                params['cookie'] = cookie
-            else:
-                params['cookie'] = json.dumps(cookie)
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+            cookie = ''
+        elif not isinstance(cookie, str):
+            cookie = json.dumps(cookie)
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_UPDATE_COOKIES,
+            {'profile_id': profile_id, 'cookie': cookie},
+        )
 
     def clear_profile_cache(self, profile_id):
-        """
-        clear profile cache
-        :param profile_id: profile id or  profile id list
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_CLEAR_CACHE
-        params = dict()
-        if isinstance(profile_id, list):
-            params['profile_id'] = profile_id
-        else:
-            params['profile_id'] = [profile_id]
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_CLEAR_CACHE,
+            {'profile_id': self._profile_ids(profile_id)},
+        )
 
     def clear_profile_cache_and_cookies(self, profile_id):
-        """
-        clear profile cache and cookies
-        :param profile_id: profile id or  profile id list
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_CLEAR_CACHE_AND_COOKIES
-        params = dict()
-        if isinstance(profile_id, list):
-            params['profile_id'] = profile_id
-        else:
-            params['profile_id'] = [profile_id]
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_CLEAR_CACHE_AND_COOKIES,
+            {'profile_id': self._profile_ids(profile_id)},
+        )
 
     def clear_profile_cache_keep_extensions(self, profile_id):
-        """
-        clear profile cache (keep extensions)
-        :param profile_id: profile id or  profile id list
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_CLEAR_CACHE_KEEP_EXTENSIONS
-        params = dict()
-        if isinstance(profile_id, list):
-            params['profile_id'] = profile_id
-        else:
-            params['profile_id'] = [profile_id]
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_CLEAR_CACHE_KEEP_EXTENSIONS,
+            {'profile_id': self._profile_ids(profile_id)},
+        )
 
     def clear_profile_cloud_data(self, profile_id, data_type):
-        """
-        clear profile cloud data
-        :param profile_id: profile id or profile id list
-        :param data_type: string or list, optional values are defined in
-                          Consts.CLOUD_DATA_TYPE_LIST, that is:
-                          Consts.CLOUD_DATA_TYPE_INDEXED_DB = 'indexed_db'
-                          Consts.CLOUD_DATA_TYPE_LOCAL_STORAGE = 'local_storage'
-                          Consts.CLOUD_DATA_TYPE_EXTENSION_DATA = 'extension_data'
-        :return: cleared profile id list
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_CLEAR_CLOUD_DATA
-        params = dict()
-        if isinstance(profile_id, list):
-            params['profile_id'] = profile_id
-        else:
-            params['profile_id'] = [profile_id]
+        def build_params():
+            if data_type is None:
+                data_types = []
+            elif isinstance(data_type, list):
+                data_types = data_type
+            else:
+                data_types = [data_type]
+            invalid = [item for item in data_types if item not in Consts.CLOUD_DATA_TYPE_LIST]
+            if invalid:
+                raise UnexpectedError(
+                    'The data_type is not supported: {}. The optional values are: {}.'.format(
+                        invalid, Consts.CLOUD_DATA_TYPE_LIST))
+            return {'profile_id': self._profile_ids(profile_id), 'type': data_types}
 
-        if data_type is None:
-            type_list = []
-        elif isinstance(data_type, list):
-            type_list = data_type
-        else:
-            type_list = [data_type]
-
-        invalid_type_list = [i for i in type_list if i not in Consts.CLOUD_DATA_TYPE_LIST]
-        if len(invalid_type_list) > 0:
-            # Fail locally instead of sending a request the Local API rejects.
-            # The code matches what an UnexpectedError would carry.
-            self._reset_request_state()
-            self.code = UNEXPECTED_ERROR_CODE
-            self.message = "The data_type is not supported: {}. The optional values are: {}.".format(
-                invalid_type_list, Consts.CLOUD_DATA_TYPE_LIST)
-            return None
-
-        params['type'] = type_list
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_CLEAR_CLOUD_DATA, build_params)
 
     def clear_profile_saved_user_password(self, profile_id):
-        """
-        clear the saved account and password of the profile
-        :param profile_id: profile id
-        :return: True
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROFILE_CLEAR_SAVED_USER_PASSWORD
-        params = dict()
-        params['profile_id'] = profile_id
-
-        try:
-            self._reset_request_state()
-            Utils.get_api_response(url, params)
-            return True
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        """Clear saved credentials; return ``True`` on success."""
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROFILE_CLEAR_SAVED_USER_PASSWORD,
+            {'profile_id': profile_id},
+            force_boolean_success=True,
+        )
 
     def get_group_list(self, page=1, limit=100):
-        """
-        get group list
-        :param page:
-        :param limit:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_GROUP_LIST
-        params = dict()
-        params['page'] = page
-        params['limit'] = limit
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            self.total, data = Utils.get_paginated_data(result)
-            return data
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_GROUP_LIST,
+            {'page': page, 'limit': limit},
+            paginated=True,
+        )
 
     def create_group(self, name, sort=0):
-        """
-        create group
-        :param name:
-        :param sort:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_GROUP_CREATE
-        params = dict()
-        params['title'] = name
-        if sort is None:
-            params['sort'] = 0
-        else:
-            params['sort'] = sort
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_GROUP_CREATE,
+            {'title': name, 'sort': 0 if sort is None else sort},
+        )
 
     def update_group(self, group_id, name, sort=None):
-        """
-        update group
-        :param group_id:
-        :param name:
-        :param sort:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_GROUP_UPDATE
-        params = dict()
-        params['id'] = group_id
-        params['title'] = name
+        params = {'id': group_id, 'title': name}
         if sort is not None:
             params['sort'] = sort
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_GROUP_UPDATE, params)
 
     def delete_group(self, group_id):
-        """
-        delete group
-        :param group_id:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_GROUP_DELETE
-        params = dict()
-        params['id'] = group_id
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_GROUP_DELETE, {'id': group_id})
 
     def get_traffic_package_list(self):
-        """
-        get traffic package list
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_TRAFFIC_PACKAGE_LIST
-        params = dict()
-        params['page'] = 1
-        params['limit'] = 100
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            self.total, data = Utils.get_paginated_data(result)
-            return data
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_TRAFFIC_PACKAGE_LIST,
+            {'page': 1, 'limit': 100},
+            paginated=True,
+        )
 
     def get_proxy_list(self, mode=0, tag_id=None, id=None, page=1, limit=10):
-        """
-        get proxy list
-        :param mode:  0=All / 1=Custom Proxy / 2=Purchased Proxy
-        :param tag_id:
-        :param id:
-        :param page:
-        :param limit:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROXY_LIST
-        params = dict()
-        params['page'] = page
-        params['limit'] = limit
+        params = {'page': page, 'limit': limit}
         if mode > 0:
             params['type'] = mode
-
         if tag_id is not None:
             params['tag_id'] = tag_id
-
         if id is not None:
             params['id'] = id
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            self.total, data = Utils.get_paginated_data(result)
-            return data
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_PROXY_LIST, params, paginated=True)
 
     def get_proxy_tag_list(self, name=None, page=1, limit=100):
-        """
-        get proxy tag list
-        :param name:
-        :param page:
-        :param limit:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROXY_TAG_LIST
-        params = dict()
+        params = {'page': page, 'limit': limit}
         if name is not None:
             params['title'] = name
-        params['page'] = page
-        params['limit'] = limit
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            self.total, data = Utils.get_paginated_data(result)
-            return data
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_PROXY_TAG_LIST, params, paginated=True)
 
     def create_proxy_tag(self, name):
-        """
-        create proxy tag
-        :param name:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROXY_TAG_CREATE
-        params = dict()
-        params['title'] = name
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_PROXY_TAG_CREATE, {'title': name})
 
     def update_proxy_tag(self, id, name):
-        """
-        update proxy tag
-        :param id:
-        :param title:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROXY_TAG_UPDATE
-        params = dict()
-        params['id'] = id
-        params['title'] = name
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_PROXY_TAG_UPDATE,
+            {'id': id, 'title': name},
+        )
 
     def delete_proxy_tag(self, id):
-        """
-        delete tag
-        :param id:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROXY_TAG_DELETE
-        params = dict()
-        params['id'] = id
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
+        return self._dispatch_action(Consts.ACTION_FOR_PROXY_TAG_DELETE, {'id': id})
 
-        if self.code is not None:
-            return None
-        else:
-            return True
+    def create_proxy(self, proxy_type, proxy_ip, proxy_port, proxy_user=None,
+                     proxy_password=None, note=None, tag=None):
+        params = {'proxy_type': proxy_type, 'proxy_ip': proxy_ip, 'proxy_port': proxy_port}
+        for key, value in (
+                ('proxy_user', proxy_user), ('proxy_password', proxy_password),
+                ('note', note), ('tag', tag)):
+            if value is not None:
+                params[key] = value
+        return self._dispatch_action(Consts.ACTION_FOR_PROXY_CREATE, params)
 
-    def create_proxy(self, proxy_type, proxy_ip, proxy_port, proxy_user=None, proxy_password=None, note=None, tag=None):
-        """
-        create proxy
-        :param proxy_type:
-        :param proxy_ip:
-        :param proxy_port:
-        :param proxy_user:
-        :param proxy_password:
-        :param note:
-        :param tag:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROXY_CREATE
-        params = dict()
-        params['proxy_type'] = proxy_type
-        params['proxy_ip'] = proxy_ip
-        params['proxy_port'] = proxy_port
-        if proxy_user is not None:
-            params['proxy_user'] = proxy_user
-        if proxy_password is not None:
-            params['proxy_password'] = proxy_password
-        if note is not None:
-            params['note'] = note
-        
-        if tag is not None:
-            params['tag'] = tag
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
-        
-    def update_proxy(self, proxy_id, proxy_type=None, proxy_ip=None, proxy_port=None, proxy_user=None, proxy_password=None, note=None, tag=None):
-        """
-        update proxy
-        :param proxy_id:
-        :param proxy_type:
-        :param proxy_ip:
-        :param proxy_port:
-        :param proxy_user:
-        :param proxy_password:
-        :param note:
-        :param tag:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROXY_UPDATE
-        params = dict()
-        params['id'] = proxy_id
-        if proxy_type is not None:
-            params['proxy_type'] = proxy_type
-        if proxy_ip is not None:
-            params['proxy_ip'] = proxy_ip
-        if proxy_port is not None:
-            params['proxy_port'] = proxy_port
-        if proxy_user is not None:
-            params['proxy_user'] = proxy_user
-        if proxy_password is not None:
-            params['proxy_password'] = proxy_password
-        if note is not None:
-            params['note'] = note
-        if tag is not None:
-            params['tag'] = tag
-        
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+    def update_proxy(self, proxy_id, proxy_type=None, proxy_ip=None, proxy_port=None,
+                     proxy_user=None, proxy_password=None, note=None, tag=None):
+        params = {'id': proxy_id}
+        for key, value in (
+                ('proxy_type', proxy_type), ('proxy_ip', proxy_ip),
+                ('proxy_port', proxy_port), ('proxy_user', proxy_user),
+                ('proxy_password', proxy_password), ('note', note), ('tag', tag)):
+            if value is not None:
+                params[key] = value
+        return self._dispatch_action(Consts.ACTION_FOR_PROXY_UPDATE, params)
 
     def delete_proxy(self, proxy_id):
-        """
-        delete proxy
-        :param proxy_id:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_PROXY_DELETE
-        params = dict()
-        params['id'] = proxy_id
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_PROXY_DELETE, {'id': proxy_id})
 
     def get_tag_list(self, page=1, limit=100):
-        """
-        get tag list
-        :param page:
-        :param limit:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_TAG_LIST
-        params = dict()
-        params['page'] = page
-        params['limit'] = limit
-
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            self.total, data = Utils.get_paginated_data(result)
-            return data
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(
+            Consts.ACTION_FOR_TAG_LIST,
+            {'page': page, 'limit': limit},
+            paginated=True,
+        )
 
     def create_tag(self, name):
-        """
-        create tag
-        :param name:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_TAG_CREATE
-        params = dict()
-        params['title'] = name
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_TAG_CREATE, {'title': name})
 
     def update_tag(self, tag_id, name, sort=None):
-        """
-        update tag
-        :param tag_id:
-        :param name:
-        :param sort:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_TAG_UPDATE
-        params = dict()
-        params['id'] = tag_id
-        params['title'] = name
+        params = {'id': tag_id, 'title': name}
         if sort is not None:
             params['sort'] = sort
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_TAG_UPDATE, params)
 
     def delete_tag(self, tag_id):
-        """
-        delete tag
-        :param tag_id:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_TAG_DELETE
-        params = dict()
-        params['id'] = tag_id
-        try:
-            self._reset_request_state()
-            result = Utils.get_api_response(url, params)
-            return result
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_TAG_DELETE, {'id': tag_id})
 
     def get_gateway_list(self):
-        """
-        get gateway list
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_GATEWAY_LIST
-        params = dict()
-        try:
-            self._reset_request_state()
-            return Utils.get_api_response(url, params)
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
+        return self._dispatch_action(Consts.ACTION_FOR_GATEWAY_LIST)
 
     def switch_gateway(self, gateway_id):
-        """
-        switch gateway
-        :param gateway_id:
-        :return:
-        """
-        url = self.base_url + Consts.ACTION_FOR_GATEWAY_SWITCH
-        params = dict()
-        params['id'] = gateway_id
-        try:
-            self._reset_request_state()
-            Utils.get_api_response(url, params)
-            return True
-        except BaseError as e:
-            self.code = e.code
-            self.message = e.message
-
-        if self.code is not None:
-            return None
-        else:
-            return True
-
+        """Switch gateway; return ``True`` on success."""
+        return self._dispatch_action(
+            Consts.ACTION_FOR_GATEWAY_SWITCH,
+            {'id': gateway_id},
+            force_boolean_success=True,
+        )

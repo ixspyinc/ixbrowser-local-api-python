@@ -243,3 +243,19 @@ class TestRequestState(object):
         transport.reply(payload={'error': {'code': 0}, 'data': []})
         c.get_opened_profile_list()
         assert transport.last['url'] == 'http://127.0.0.1:12345/api/v2/profile-opened-list'
+
+    def test_client_passes_configured_timeout_to_its_session(self, transport):
+        client = IXBrowserClient(timeout=(2, 15), session=transport)
+        client.get_opened_profile_list()
+        assert transport.last['timeout'] == (2, 15)
+
+    def test_context_manager_closes_an_owned_session(self, transport):
+        with IXBrowserClient() as client:
+            client.get_opened_profile_list()
+            assert transport.closed is False
+        assert transport.closed is True
+
+    def test_close_does_not_close_an_injected_session(self, transport):
+        client = IXBrowserClient(session=transport)
+        client.close()
+        assert transport.closed is False

@@ -25,7 +25,7 @@ class Profile(object):
         if profile_dict is not None and isinstance(profile_dict, dict):
             # Check whether the dictionary KEY matches the class attribute
             for k, v in profile_dict.items():
-                if hasattr(self, k):
+                if k in self.__dict__:
                     if isinstance(v, dict):
                         if k == 'proxy_config':
                             self.proxy_config = Proxy(v)
@@ -138,7 +138,7 @@ class Proxy(object):
 
         if proxy_dict is not None and isinstance(proxy_dict, dict):
             for k, v in proxy_dict.items():
-                if hasattr(self, k):
+                if k in self.__dict__:
                     setattr(self, k, v)
 
     def reset_all_attributes(self):
@@ -163,11 +163,16 @@ class Proxy(object):
         :return:
         """
         if domain_ls is not None:
+            if not isinstance(domain_ls, (list, str)):
+                raise UnexpectedError('domain_ls must be a string or a list of strings')
             if len(domain_ls) > 0:
-                self.enable_bypass = True
                 if isinstance(domain_ls, list):
+                    if not all(isinstance(domain, str) for domain in domain_ls):
+                        raise UnexpectedError('domain_ls must contain only strings')
+                    self.enable_bypass = True
                     self.bypass_list = '\n'.join(domain_ls)
-                else:
+                elif isinstance(domain_ls, str):
+                    self.enable_bypass = True
                     self.bypass_list = domain_ls
             else:
                 self.enable_bypass = False
@@ -251,7 +256,7 @@ class Proxy(object):
         return True
 
     def change_to_url_extraction_mode(self, proxy_url, 
-                                      format_type=Consts.PROXY_DATA_FROMAT_TYPE_TXT,
+                                      format_type=Consts.PROXY_DATA_FORMAT_TYPE_TXT,
                                       proxy_type=Consts.PROXY_TYPE_SOCKS5, 
                                       extract_method = Consts.PROXY_EXTRACT_FROM_URL_FRESH_TYPE_WHEN_INVALID,
                                       txt_mapping = None,
@@ -268,6 +273,25 @@ class Proxy(object):
         :param proxy_check_line:
         :return:
         """
+        supported_formats = {Consts.PROXY_DATA_FORMAT_TYPE_TXT, Consts.PROXY_DATA_FORMAT_TYPE_JSON}
+        supported_proxy_types = {
+            Consts.PROXY_TYPE_DIRECT,
+            Consts.PROXY_TYPE_HTTP,
+            Consts.PROXY_TYPE_HTTPS,
+            Consts.PROXY_TYPE_SOCKS5,
+            Consts.PROXY_TYPE_SSH,
+        }
+        supported_extract_methods = {
+            Consts.PROXY_EXTRACT_FROM_URL_FRESH_TYPE_WHEN_INVALID,
+            Consts.PROXY_EXTRACT_FROM_URL_FRESH_TYPE_WHEN_OPEN,
+        }
+        if format_type not in supported_formats:
+            raise UnexpectedError('format_type must be one of: {}'.format(sorted(supported_formats)))
+        if proxy_type not in supported_proxy_types:
+            raise UnexpectedError('proxy_type must be one of: {}'.format(sorted(supported_proxy_types)))
+        if extract_method not in supported_extract_methods:
+            raise UnexpectedError('extract_method must be one of: {}'.format(sorted(supported_extract_methods)))
+
         self.reset_all_attributes()
         self.proxy_mode = Consts.PROXY_MODE_EXTRACT_FROM_URL
 
@@ -275,14 +299,14 @@ class Proxy(object):
         self.proxy_service = 'general'
         self.proxy_data_format_type = format_type
         
-        if self.proxy_data_format_type == Consts.PROXY_DATA_FROMAT_TYPE_TXT:
+        if self.proxy_data_format_type == Consts.PROXY_DATA_FORMAT_TYPE_TXT:
             if txt_mapping is None:
                 self.proxy_data_txt_format = Consts.PROXY_DATA_TXT_FORMAT_LIST[0]
             else:
                 self.proxy_data_txt_format = txt_mapping
             self.proxy_data_json_format = None
 
-        if self.proxy_data_format_type == Consts.PROXY_DATA_FROMAT_TYPE_JSON:
+        if self.proxy_data_format_type == Consts.PROXY_DATA_FORMAT_TYPE_JSON:
             if json_mapping is None:
                 self.proxy_data_json_format = Consts.PROXY_DATA_JSON_FORMAT
             else:
@@ -308,7 +332,7 @@ class Proxy(object):
             d['proxy_type'] = self.proxy_type
             d['proxy_service'] = self.proxy_service
             d['proxy_data_format_type'] = self.proxy_data_format_type
-            if self.proxy_data_format_type == Consts.PROXY_DATA_FROMAT_TYPE_TXT:
+            if self.proxy_data_format_type == Consts.PROXY_DATA_FORMAT_TYPE_TXT:
                 d['proxy_data_txt_format'] = self.proxy_data_txt_format
                 d['proxy_data_json_format'] = None
             else:
@@ -403,7 +427,7 @@ class Preference(object):
 
         if preference_dict is not None and isinstance(preference_dict, dict):
             for k, v in preference_dict.items():
-                if hasattr(self, k):
+                if k in self.__dict__:
                     setattr(self, k, v)
 
     def set_cloud_backup(self, save_cookies=1, save_indexed_db=0, save_local_storage=0, extension_data_backup=0):
@@ -514,7 +538,7 @@ class Fingerprint(object):
 
         if fingerprint_dict is not None and isinstance(fingerprint_dict, dict):
             for k, v in fingerprint_dict.items():
-                if hasattr(self, k):
+                if k in self.__dict__:
                     setattr(self, k, v)
 
     def reset_all_attributes(self):

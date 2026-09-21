@@ -25,9 +25,9 @@ python examples/profile_open.py
 ```
 
 Some examples enable `ixbrowser_local_api` DEBUG logging through Python's
-standard `logging` configuration. These logs are not redacted and may contain
-passwords, cookies or proxy credentials. Remove the DEBUG configuration when
-running outside a trusted debugging environment. See
+standard `logging` configuration. Sensitive request fields are redacted and
+response bodies are summarised, but URLs and non-sensitive request metadata are
+still logged. Use DEBUG only when needed. See
 [the logging guide](../docs/error-handling.md#debug-request-logs).
 
 ## General Examples

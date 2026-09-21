@@ -32,12 +32,19 @@ class FakeTransport(object):
     def __init__(self):
         self.calls = []
         self.response = FakeResponse(success_payload())
+        self.closed = False
 
     def __call__(self, url, json=None, timeout=None, headers=None, **kwargs):
         self.calls.append({'url': url, 'payload': json, 'timeout': timeout})
         if isinstance(self.response, Exception):
             raise self.response
         return self.response
+
+    def post(self, url, json=None, timeout=None, headers=None, **kwargs):
+        return self(url, json=json, timeout=timeout, headers=headers, **kwargs)
+
+    def close(self):
+        self.closed = True
 
     def reply(self, payload=None, status_code=200, invalid_json=False, text=None):
         self.response = FakeResponse(payload=payload, status_code=status_code,
@@ -79,10 +86,11 @@ def transport(monkeypatch):
     """Replace requests.post with a fake transport for the duration of a test."""
     fake = FakeTransport()
     monkeypatch.setattr('ixbrowser_local_api.utils.requests.post', fake)
+    monkeypatch.setattr('ixbrowser_local_api.client.requests.Session', lambda: fake)
     yield fake
 
 
 @pytest.fixture
 def client(transport):
     """A client wired to the fake transport."""
-    return IXBrowserClient()
+    return IXBrowserClient(session=transport)

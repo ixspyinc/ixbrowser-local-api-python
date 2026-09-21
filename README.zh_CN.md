@@ -19,8 +19,12 @@ ixBrowser 本地 API V2.0 的官方 Python SDK。
 ```python
 from ixbrowser_local_api import IXBrowserClient
 
-c = IXBrowserClient(target="127.0.0.1", port=53200)
+c = IXBrowserClient(target="127.0.0.1", port=53200, timeout=(2, 20))
 ```
+
+客户端会复用 HTTP 会话。生命周期明确时可使用上下文管理器，或在使用结束后调用
+`c.close()`。请勿让并发调用共享同一个客户端实例：`code`、`message` 和 `total`
+只描述最近一次调用。
 
 ## 安装方法
 

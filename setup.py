@@ -2,7 +2,7 @@ import ast
 import os
 import pathlib
 
-from setuptools import setup
+from setuptools import find_packages, setup
 from setuptools.command.build_py import build_py
 from setuptools.command.sdist import sdist
 from packaging.version import Version
@@ -47,9 +47,8 @@ setup(name='ixbrowser-local-api',
       url='https://github.com/ixspyinc/ixbrowser-local-api-python',
       license='MIT',
       keywords='',
-      # Only the SDK is shipped. find_packages() would also pick up the top level
-      # tests package and install it into the user environment.
-      packages=['ixbrowser_local_api'],
+      packages=find_packages(include=['ixbrowser_local_api', 'ixbrowser_local_api.*']),
+      package_data={'ixbrowser_local_api': ['py.typed']},
       cmdclass={'build_py': VersionedBuildPy, 'sdist': VersionedSdist},
       install_requires=['requests >= 2'],
       python_requires='>=3.8',

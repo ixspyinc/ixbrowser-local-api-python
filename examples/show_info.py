@@ -21,7 +21,11 @@ while True:
     if action_index == 'x' or action_index == 'X':
         break
 
-    action_index = int(action_index)
+    try:
+        action_index = int(action_index)
+    except ValueError:
+        print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Please enter a number, x, or X')
+        continue
     if action_index not in action_dict:
         print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'List does not exist')
     elif action_index == 1:
@@ -67,4 +71,5 @@ while True:
             sys.exit()
         else:
             for item in data:
-                print('  ', item['id'], item['proxy_type'], item['proxy_ip'], item['proxy_port'], item['proxy_user'], item['proxy_password'])
+                print('  ', item['id'], item['proxy_type'], item['proxy_ip'], item['proxy_port'],
+                      item.get('proxy_user'), item.get('proxy_password'))
