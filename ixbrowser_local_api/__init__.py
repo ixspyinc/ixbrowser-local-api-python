@@ -3,7 +3,7 @@ import logging
 from .errors import UnexpectedError, HttpError, ResponseError, BaseError
 from .utils import Utils
 from .consts import Consts
-from .client import IXBrowserClient
+from .client import IXBrowserClient, ProxyConfig, FingerprintConfig, PreferenceConfig
 from .entities import Profile, Proxy, Preference, Fingerprint
 from .version import __version__, VERSION
 
@@ -14,6 +14,9 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 # re-exports, so a linter does not report them as unused imports.
 __all__ = [
     'IXBrowserClient',
+    'ProxyConfig',
+    'FingerprintConfig',
+    'PreferenceConfig',
     'Utils',
     'Consts',
     'Profile',

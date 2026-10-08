@@ -307,10 +307,12 @@ class Proxy(object):
             self.proxy_data_json_format = None
 
         if self.proxy_data_format_type == Consts.PROXY_DATA_FORMAT_TYPE_JSON:
+            # Copy so later edits on this entity never leak into the shared
+            # Consts default or the caller's own mapping.
             if json_mapping is None:
-                self.proxy_data_json_format = Consts.PROXY_DATA_JSON_FORMAT
+                self.proxy_data_json_format = dict(Consts.PROXY_DATA_JSON_FORMAT)
             else:
-                self.proxy_data_json_format = json_mapping
+                self.proxy_data_json_format = dict(json_mapping) if isinstance(json_mapping, dict) else json_mapping
             self.proxy_data_txt_format = None
 
         self.proxy_type = proxy_type

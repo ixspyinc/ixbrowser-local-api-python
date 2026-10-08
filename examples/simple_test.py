@@ -75,7 +75,7 @@ else:
 # update profile cookies
 """
 profile_id = 250
-cookie = None
+cookie = ''  # '' clears the cookies; None is rejected
 data = c.update_profile_cookie(profile_id, cookie)
 if data is None:
     print(time.strftime("%H:%M:%S", time.localtime(time.time())), 'Error code=', c.code)

@@ -1,6 +1,6 @@
 import json
 import warnings
-from typing import Optional
+from typing import Any, Dict, Optional, Union
 
 import requests
 
@@ -8,6 +8,11 @@ from .consts import Consts
 from .entities import Fingerprint, Preference, Profile, Proxy
 from .errors import BaseError, UnexpectedError
 from .utils import Utils
+
+# Nested configurations may be given as an entity or as its plain-dict form.
+ProxyConfig = Union[Proxy, Dict[str, Any]]
+FingerprintConfig = Union[Fingerprint, Dict[str, Any]]
+PreferenceConfig = Union[Preference, Dict[str, Any]]
 
 
 class IXBrowserClient(object):
@@ -45,8 +50,13 @@ class IXBrowserClient(object):
         self.total = None
 
     def _dispatch_action(self, action, params=None, paginated=False,
-                         force_boolean_success=False, transform=None):
-        """Build, send and unwrap one request under the common error contract."""
+                         force_boolean_success=False, transform=None, list_result=False):
+        """Build, send and unwrap one request under the common error contract.
+
+        ``list_result`` marks non-paginated endpoints whose data is a list: a
+        successful ``data: null`` or a response without ``data`` is then
+        returned as ``[]`` instead of ``True``.
+        """
         self._reset_request_state()
         try:
             payload = params() if callable(params) else (params or {})
@@ -55,6 +65,11 @@ class IXBrowserClient(object):
             if paginated:
                 self.total, data = Utils.get_paginated_data(result)
                 return data
+            # Utils.get_api_response reports a missing 'data' key as True, so
+            # True is the "no data" marker here; a list endpoint never
+            # legitimately answers with a boolean.
+            if list_result and (result is None or result is True):
+                return []
             if force_boolean_success or result is None:
                 return True
             if transform is not None:
@@ -89,27 +104,54 @@ class IXBrowserClient(object):
 
     @staticmethod
     def _profile_ids(profile_id):
-        return profile_id if isinstance(profile_id, list) else [profile_id]
+        if isinstance(profile_id, (list, tuple, set, frozenset)):
+            return list(profile_id)
+        return [profile_id]
+
+    @staticmethod
+    def _entity_payload(name, entity):
+        """Serialise a nested configuration given as an entity or a plain dict."""
+        if isinstance(entity, dict):
+            return dict(entity)
+        dump = getattr(entity, 'dump_to_dict', None)
+        if not callable(dump):
+            raise UnexpectedError(name + ' must be a dictionary or an entity with dump_to_dict()')
+        payload = dump()
+        if not isinstance(payload, dict):
+            raise UnexpectedError(name + '.dump_to_dict() must return a dictionary')
+        return payload
+
+    @staticmethod
+    def _is_positive_filter(name, value):
+        """Return whether an optional numeric filter is set; ``None``/``0`` mean unset."""
+        if value is None:
+            return False
+        if isinstance(value, bool) or not isinstance(value, int):
+            raise UnexpectedError('{} must be an integer, got: {!r}'.format(name, value))
+        return value > 0
 
     def get_profile_list(self, keyword=None, group_id=0, page=1, limit=10, tag_id=0, profile_id=0):
-        params = {}
-        if profile_id == 0:
-            params.update(page=page, limit=limit)
-            if group_id > 0:
-                params['group_id'] = group_id
-            if tag_id > 0:
-                params['tag_id'] = tag_id
-            if keyword:
-                params['name'] = keyword
-        else:
-            params['profile_id'] = profile_id
-        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_LIST, params, paginated=True)
+        def build_params():
+            params = {}
+            if profile_id is None or profile_id == 0:
+                params.update(page=page, limit=limit)
+                if self._is_positive_filter('group_id', group_id):
+                    params['group_id'] = group_id
+                if self._is_positive_filter('tag_id', tag_id):
+                    params['tag_id'] = tag_id
+                if keyword:
+                    params['name'] = keyword
+            else:
+                params['profile_id'] = profile_id
+            return params
+
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_LIST, build_params, paginated=True)
 
     def get_opened_profile_list(self):
-        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_OPENED_LIST)
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_OPENED_LIST, list_result=True)
 
     def get_native_opened_profile_list(self):
-        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_NATIVE_OPENED_LIST)
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_NATIVE_OPENED_LIST, list_result=True)
 
     def open_profile(self, profile_id, load_extensions=True, load_profile_info_page=False,
                      cookies_backup=True, cookie=None, disable_extension_welcome_page=True,
@@ -134,9 +176,9 @@ class IXBrowserClient(object):
     def open_profile_with_random_fingerprint(
             self, profile_id, load_extensions=True, load_profile_info_page=False,
             cookie=None, disable_extension_welcome_page=True, startup_args=None,
-            proxy_config: Optional[Proxy] = None,
-            fingerprint_config: Optional[Fingerprint] = None,
-            preference_config: Optional[Preference] = None):
+            proxy_config: Optional[ProxyConfig] = None,
+            fingerprint_config: Optional[FingerprintConfig] = None,
+            preference_config: Optional[PreferenceConfig] = None):
         def build_params():
             args = self._startup_args(startup_args)
             if disable_extension_welcome_page and '--disable-extension-welcome-page' not in args:
@@ -154,7 +196,7 @@ class IXBrowserClient(object):
                     ('fingerprint_config', fingerprint_config),
                     ('preference_config', preference_config)):
                 if entity is not None:
-                    params[key] = entity.dump_to_dict()
+                    params[key] = self._entity_payload(key, entity)
             return params
 
         return self._dispatch_action(Consts.ACTION_FOR_PROFILE_OPEN_WITH_FINGERPRINT, build_params)
@@ -351,11 +393,11 @@ class IXBrowserClient(object):
         )
 
     def import_profile_via_transfer_code(
-            self, transfer_code, proxy_config: Optional[Proxy] = None):
+            self, transfer_code, proxy_config: Optional[ProxyConfig] = None):
         def build_params():
             params = {'transfer_code': transfer_code}
             if proxy_config is not None:
-                params['proxy_config'] = proxy_config.dump_to_dict()
+                params['proxy_config'] = self._entity_payload('proxy_config', proxy_config)
             return params
 
         return self._dispatch_action(
@@ -366,14 +408,17 @@ class IXBrowserClient(object):
     def get_profile_transfer_record_list(
             self, keyword=None, record_type=Consts.TRANSFER_RECORD_LIST_TYPE_TRANSFER,
             page=1, limit=10):
-        params = {'page': page, 'limit': limit}
-        if record_type > 0:
-            params['type'] = record_type
-        if keyword:
-            params['title'] = keyword
+        def build_params():
+            params = {'page': page, 'limit': limit}
+            if self._is_positive_filter('record_type', record_type):
+                params['type'] = record_type
+            if keyword:
+                params['title'] = keyword
+            return params
+
         return self._dispatch_action(
             Consts.ACTION_FOR_PROFILE_TRANSFER_RECORD_LIST,
-            params,
+            build_params,
             paginated=True,
         )
 
@@ -396,14 +441,25 @@ class IXBrowserClient(object):
         )
 
     def update_profile_cookie(self, profile_id, cookie):
-        if cookie is None:
-            cookie = ''
-        elif not isinstance(cookie, str):
-            cookie = json.dumps(cookie)
-        return self._dispatch_action(
-            Consts.ACTION_FOR_PROFILE_UPDATE_COOKIES,
-            {'profile_id': profile_id, 'cookie': cookie},
-        )
+        """Replace profile cookies.
+
+        ``cookie`` is a JSON string or a JSON-serialisable value. ``None`` is
+        rejected so a missing value can never wipe the cookies by accident;
+        pass ``''`` explicitly to clear them.
+        """
+        def build_params():
+            if cookie is None:
+                raise UnexpectedError("cookie is required; pass '' explicitly to clear cookies")
+            if isinstance(cookie, str):
+                serialised = cookie
+            else:
+                try:
+                    serialised = json.dumps(cookie)
+                except (TypeError, ValueError) as error:
+                    raise UnexpectedError('cookie must be a string or JSON serialisable') from error
+            return {'profile_id': profile_id, 'cookie': serialised}
+
+        return self._dispatch_action(Consts.ACTION_FOR_PROFILE_UPDATE_COOKIES, build_params)
 
     def clear_profile_cache(self, profile_id):
         return self._dispatch_action(
@@ -480,14 +536,17 @@ class IXBrowserClient(object):
         )
 
     def get_proxy_list(self, mode=0, tag_id=None, id=None, page=1, limit=10):
-        params = {'page': page, 'limit': limit}
-        if mode > 0:
-            params['type'] = mode
-        if tag_id is not None:
-            params['tag_id'] = tag_id
-        if id is not None:
-            params['id'] = id
-        return self._dispatch_action(Consts.ACTION_FOR_PROXY_LIST, params, paginated=True)
+        def build_params():
+            params = {'page': page, 'limit': limit}
+            if self._is_positive_filter('mode', mode):
+                params['type'] = mode
+            if tag_id is not None:
+                params['tag_id'] = tag_id
+            if id is not None:
+                params['id'] = id
+            return params
+
+        return self._dispatch_action(Consts.ACTION_FOR_PROXY_LIST, build_params, paginated=True)
 
     def get_proxy_tag_list(self, name=None, page=1, limit=100):
         params = {'page': page, 'limit': limit}
@@ -551,7 +610,7 @@ class IXBrowserClient(object):
         return self._dispatch_action(Consts.ACTION_FOR_TAG_DELETE, {'id': tag_id})
 
     def get_gateway_list(self):
-        return self._dispatch_action(Consts.ACTION_FOR_GATEWAY_LIST)
+        return self._dispatch_action(Consts.ACTION_FOR_GATEWAY_LIST, list_result=True)
 
     def switch_gateway(self, gateway_id):
         """Switch gateway; return ``True`` on success."""

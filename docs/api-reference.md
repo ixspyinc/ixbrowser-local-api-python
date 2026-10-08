@@ -37,8 +37,15 @@ longer needed. A custom requests-compatible session may be supplied with
 ## Return Convention
 
 Most methods return API data on success. Successful responses without data return
-`True`. If the request fails, the method returns `None`, and the error details are
-available on `c.code` and `c.message`.
+`True`, except non-paginated list endpoints (`get_opened_profile_list`,
+`get_native_opened_profile_list`, and `get_gateway_list`), which return `[]`.
+Paginated methods (`get_profile_list`, etc.) return the list of items for the page
+(or `[]` if the page contains no items) and set `c.total`; if the server returns a
+response lacking the expected pagination structure, they return `None` and set
+`c.code = 1`. If any request fails, the method returns `None`, and the error
+details are available on `c.code` and `c.message`. Invalid arguments detected
+locally (for example a non-integer filter or an unsupported nested configuration)
+use the same `None` + `c.code` contract and send no request.
 
 See [error-handling.md](error-handling.md).
 
@@ -63,7 +70,7 @@ See [error-handling.md](error-handling.md).
 | `random_profile_fingerprint(profile_id)` | `profile-random-fingerprint-configuration` | Generate a random fingerprint configuration for a profile. |
 | `update_profile_groups_in_batches(profile_id, group_id)` | `profile-update-groups-in-batches` | Move profiles to a group in batches. |
 | `get_profile_cookie(profile_id)` | `profile-get-cookies` | Get cookies for a profile. |
-| `update_profile_cookie(profile_id, cookie)` | `profile-update-cookies` | Update cookies for a profile. |
+| `update_profile_cookie(profile_id, cookie)` | `profile-update-cookies` | Update cookies for a profile. `cookie` is a JSON string or a JSON-serialisable value; pass `''` to clear. `None` is rejected without sending a request. |
 | `clear_profile_cache(profile_id)` | `profile-clear-cache` | Clear profile cache. |
 | `clear_profile_cache_and_cookies(profile_id)` | `profile-clear-cache-and-cookies` | Clear profile cache and cookies. |
 | `clear_profile_cache_keep_extensions(profile_id)` | `profile-clear-cache-keep-extensions` | Clear profile cache but keep extensions. |
